@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-title>Register</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card class="welcome-card">
+    <ion-card-header>
+      <ion-card-title>Please Register</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-item>
+        <ion-label position="floating">Username</ion-label>
+        <ion-input type="text" name="username" [(ngModel)]="user.username"></ion-input>
+        <div *ngIf="errors.username"> {{ errors.username }} </div>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Email</ion-label>
+        <ion-input type="email" name="email" [(ngModel)]="user.email"></ion-input>
+        <div *ngIf="errors.email"> {{ errors.email }} </div>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">First Name</ion-label>
+        <ion-input type="text" name="first_name" [(ngModel)]="user.first_name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Last Name</ion-label>
+        <ion-input type="text" name="last_name" [(ngModel)]="user.last_name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Password</ion-label>
+        <ion-input type="password" name="password" [(ngModel)]="user.password"></ion-input>
+        <div *ngIf="errors.password"> {{ errors.password }} </div>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Confirm password</ion-label>
+        <ion-input type="password" name="confirm_password" [(ngModel)]="confirm_password"></ion-input>
+        <div *ngIf="errors.confirm_password"> {{ errors.confirm_password }} </div>
+      </ion-item>
+      <ion-button id="register" expand="full" (click)="onSubmit()">Register</ion-button>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>
