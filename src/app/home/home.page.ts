@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { LowerCasePipe } from '@angular/common';
 import { Observable } from 'rxjs';
 import { DeckService } from '../deck.service';
 import { Card } from '../card';
@@ -28,13 +29,20 @@ export class HomePage {
       });
   }
 
-  shuffle(deck: Deck): void {
+  shuffle(): void {
     this.deckService.shuffle(this.deck).subscribe(
       (response:any)=>{
         console.log(response)
         this.deck = response;
-      }
-    )
+      });
+  }
+
+  flipCard(card:Card): void {
+    if(card.isFaceUp == false) {
+      card.isFaceUp = true;
+    } else {
+      card.isFaceUp = false;
+    }
   }
 
 }

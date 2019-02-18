@@ -1,7 +1,7 @@
 import { Card } from './card';
-import { Cards } from './default-deck';
 
 export class Deck {
-    cards: Array<Card>;
-    isShuffled: boolean;
+    cards: Array<Card> = [];
+    isLoaded: boolean = false;
+    isShuffled: boolean = false;
 }

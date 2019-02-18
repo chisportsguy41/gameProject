@@ -11,8 +11,7 @@ export class DeckService {
   deck: Deck = new Deck();
 
   constructor() { 
-    this.deck.cards = [];
-    this.deck.isShuffled = false;
+    
   }
 
   load(shoeSize:number = 1): Observable<Deck> {
@@ -21,6 +20,8 @@ export class DeckService {
         this.deck.cards.push(card);
       }
     }
+    this.deck.isLoaded = true;
+    this.shuffle(this.deck);
     return of(this.deck);
   }
 
