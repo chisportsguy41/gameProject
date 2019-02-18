@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../auth.service';
-import { Router } from '@angular/router';
+import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-logout',
@@ -11,7 +11,7 @@ export class LogoutPage implements OnInit {
   errors: Array<any> = [];
   errorMessage: string;
 
-  constructor(private router: Router, private authService: AuthService) { }
+  constructor(private cookieService: CookieService, private authService: AuthService) { }
 
   ngOnInit() {
     this.logOut();
@@ -20,7 +20,8 @@ export class LogoutPage implements OnInit {
   logOut(): void {
     this.authService.logOut().subscribe(
       (response: any) => {
-        this.router.navigate(['/']);
+        this.cookieService.delete('sugar', '/game');
+        window.location.href = '/game';
       }
     );
   }

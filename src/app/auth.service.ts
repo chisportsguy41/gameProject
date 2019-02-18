@@ -13,18 +13,16 @@ const httpOptions = {
 
 export class AuthService {
   private url: string;
-  private baseURL: string;
-  private host: string;
-  private l: any;
 
   constructor(private http: HttpClient) {
-    this.l = window.location;
-    if(this.l.port >= '8100'){
-      this.host = 'localhost:3000';
+    let l = window.location;
+    let host: string;
+    if(l.port >= '8100'){
+      host = 'localhost:3000';
     }else{
-      this.host = this.l.hostname + ((this.l.port.length>0)?':' + this.l.port:'');
+      host = l.hostname + ((l.port.length>0)?':' + l.port:'');
     }
-    this.url = `${this.l.protocol}//${this.host}/api/auth/`;
+    this.url = `${l.protocol}//${host}/api/auth/`;
   }
 
   register (user: User): Observable<User> {
@@ -37,11 +35,6 @@ export class AuthService {
 
   logOut(): any {
     return this.http.delete<any>(this.url + 'logout');
-  }
-
-  getRedirect(): string {
-    this.baseURL = `${this.l.protocol}//${this.host}`;
-    return this.baseURL;
   }
 
 }

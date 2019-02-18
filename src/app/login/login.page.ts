@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Validators, FormBuilder, FormGroup, NgForm } from '@angular/forms';
+import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { User } from '../user';
@@ -11,12 +12,12 @@ import { User } from '../user';
 })
 export class LoginPage implements OnInit {
   user: User = new User();
-  errors: Array<any> = [];
   errorMessage: string;
 
   constructor( 
     private authService: AuthService, 
-    private router: Router
+    private router: Router,
+    private cookieService: CookieService
   ) {  }
 
   ngOnInit() {
@@ -28,7 +29,13 @@ export class LoginPage implements OnInit {
     }
 
     if(response.success===true) {
-      this.router.navigate(['/home']);
+      let text = "";
+      let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      for(let i = 0; i < 10; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      this.cookieService.set('sugar', text, (1/24), '/game');
+      window.location.href = '/game';
     }
   }
 

@@ -30,7 +30,11 @@ export class GameService {
   }
 
   createGame(game:Game): Observable<Game> {
-    return this.http.post<Game>(this.url + 'create', game, httpOptions);
+    return this.http.post<Game>(this.url, game, httpOptions);
+  }
+
+  deleteGame(id:string): Observable<any> {
+    return this.http.delete<Game>(this.url + id);
   }
 
 }
