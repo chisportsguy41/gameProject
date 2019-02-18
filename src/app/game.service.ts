@@ -22,7 +22,7 @@ export class GameService {
     }else{
       host = l.hostname + ((l.port.length>0)?':' + l.port:'');
     }
-    this.url = `${l.protocol}//${host}/api/auth/`;
+    this.url = `${l.protocol}//${host}/api/games/`;
   }
 
   getGame(id:string): Observable<Game> {

@@ -5,5 +5,58 @@
 </ion-header>
 
 <ion-content padding>
+  <ion-card>
+    <ion-button expand="full" color="tertiary" (click)="selectGameType('blackjack')">Blackjack</ion-button>
+    <ion-card-header>
+      <ion-card-title *ngIf="game.gameType">Choose your settings!</ion-card-title>
+    </ion-card-header>
+    <ion-card-content *ngIf="game.gameType=='blackjack'">
+      <ion-item>
+        <ion-label position="floating">Name your game</ion-label>
+        <ion-input type="text" name="name" [(ngModel)]="game.name"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label>How many players?</ion-label>
+        <ion-select placeholder="Pick a number" [(ngModel)]="game.players">
+          <ion-select-option value="0">0</ion-select-option>
+          <ion-select-option value="1">1</ion-select-option>
+          <ion-select-option value="2">2</ion-select-option>
+          <ion-select-option value="3">3</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>How many decks in your shoe?</ion-label>
+        <ion-select placeholder="Pick a number" [(ngModel)]="game.shoes">
+          <ion-select-option value="8">8</ion-select-option>
+          <ion-select-option value="7">7</ion-select-option>
+          <ion-select-option value="6">6</ion-select-option>
+          <ion-select-option value="5">5</ion-select-option>
+          <ion-select-option value="4">4</ion-select-option>
+          <ion-select-option value="3">3</ion-select-option>
+          <ion-select-option value="2">2</ion-select-option>
+          <ion-select-option value="1">1</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Local or online?</ion-label>
+        <ion-select placeholder="Pick one" [(ngModel)]="game.type">
+          <ion-select-option value="local">Local</ion-select-option>
+          <ion-select-option value="online">Online</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item *ngIf="game.type=='online'">
+        <ion-label>Would you like your game to be password protected?</ion-label>
+        <ion-select placeholder="Pick one" [(ngModel)]="protected">
+          <ion-select-option value="true">Yes</ion-select-option>
+          <ion-select-option value="false">No</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item *ngIf="protected=='true'">
+        <ion-label position="floating">Enter a password</ion-label>
+        <ion-input type="text" name="password" [(ngModel)]="game.password"></ion-input>
+      </ion-item>
+      <ion-button expand="full" (click)=onSubmit()>Submit</ion-button>
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>

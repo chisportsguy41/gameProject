@@ -1,0 +1,15 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Play</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <ion-card *ngIf="game">
+    <ion-button expand="full" (click)="start()">Start</ion-button>
+    <ion-card-header *ngIf="game.hasStarted==true">
+      <ion-card-title *ngIf="deck.isShuffled==true">You did it!</ion-card-title>
+    </ion-card-header>
+  </ion-card>
+
+</ion-content>

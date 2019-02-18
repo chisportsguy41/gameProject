@@ -21,7 +21,11 @@ export class DeckService {
       }
     }
     this.deck.isLoaded = true;
-    this.shuffle(this.deck);
+    this.shuffle(this.deck).subscribe(
+      (response:any)=>{
+        this.deck = response;
+      }
+    );
     return of(this.deck);
   }
 

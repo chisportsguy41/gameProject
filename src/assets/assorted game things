@@ -1,0 +1,15 @@
+<ion-img *ngIf="card.isFaceUp==false" class="cardImage"
+          src="assets/imgs/card-back.png"></ion-img>
+
+curl -d '{"gameType":"blackjack", "name":"test2", "shoes": 8, "players": 5, "type":"local"}' -H "Content-Type: application/json" -X POST http://localhost:3000/api/games
+
+curl -H "Content-Type: application/json" -X DELETE http://localhost:3000/api/games/5c6b0f9071ddac2a61a2266f
+
+<ion-button size="large" color="secondary" (click)="selectGameType('poker')">Poker</ion-button>
+
+Shoes
+Players
+Name
+Type (local or online)
+Protected (if online)
+Password (if protected)

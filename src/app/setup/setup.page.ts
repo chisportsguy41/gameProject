@@ -12,6 +12,7 @@ import { Game } from '../game';
 })
 export class SetupPage {
 game: Game = new Game();
+protected: string;
 errors: any = {};
 errorMessage: string;
 
@@ -47,16 +48,25 @@ errorMessage: string;
     if(response.success===true) {
       this.game = new Game();
       console.log(response.game);
-      //this.router.navigate(['/play', response.game._id]);
+      this.router.navigate(['/play', response.game._id]);
     }
   }
 
   onSubmit(): void {
+    if(this.protected=='true') {
+      this.game.protected = true;
+    } else {
+      this.game.protected = false;
+    }
     this.gameService.createGame(this.game).subscribe(
       (response:any)=>{
         this.response(response);
       }
-    )
+    );
+  }
+
+  selectGameType(type:string): void {
+    this.game.gameType = type;
   }
 
 }
