@@ -16,13 +16,15 @@
         <ion-card-subtitle>Get Started</ion-card-subtitle>
         <ion-card-title>Welcome to The Game</ion-card-title>
       </ion-card-header>
-      <ion-card-content *ngIf="deck">
-        <ion-list *ngFor="let card of deck.cards">
+      <ion-card-content *ngIf="deck.isLoaded==true">
+        <ion-list *ngFor="let card of player.hand">
           <ion-img *ngIf="card.isFaceUp==true" class="cardImage"
           src="assets/imgs/{{card.name | lowercase}}-of-{{card.suit | lowercase}}.png"></ion-img>
           <ion-item (click)="flipCard(card)">{{card.name}} of {{card.suit}}</ion-item>
         </ion-list>
         <ion-button expand="full" color="tertiary" (click)="shuffle()">Shuffle</ion-button>
+        <ion-button expand="full" color="tertiary" (click)="deal(dealNumber)">Deal</ion-button>
+        <ion-button expand="full" color="tertiary" (click)="bet(250)">Bet</ion-button>
       </ion-card-content>
     </ion-card>
 </ion-content>

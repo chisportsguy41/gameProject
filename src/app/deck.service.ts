@@ -21,15 +21,11 @@ export class DeckService {
       }
     }
     this.deck.isLoaded = true;
-    this.shuffle(this.deck).subscribe(
-      (response:any)=>{
-        this.deck = response;
-      }
-    );
+    this.shuffle(this.deck);
     return of(this.deck);
   }
 
-  shuffle(deck: Deck): Observable<Deck> {
+  shuffle(deck: Deck): void {
     var j, x, i;
     for (i = deck.cards.length-1; i>0; i--) {
       j = Math.floor(Math.random() * (i+1));
@@ -38,6 +34,5 @@ export class DeckService {
       deck.cards[j] = x;
     }
     deck.isShuffled = true;
-    return of(deck);
   }
 }
