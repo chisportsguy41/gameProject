@@ -22,8 +22,8 @@ export class PlayerService {
       player.totalValue += card.value;
       if(card.name == "Ace"){
         player.numAces++;
-        if(player.numAces == 2) {
-          player.totalValue += 10;
+        if(player.numAces >= 2) {
+          player.totalValue -= 10;
         }
       } else if(card.name == "Two") {
         player.numTwos++;

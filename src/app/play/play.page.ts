@@ -6,6 +6,8 @@ import { GameService } from '../game.service';
 import { Game } from '../game';
 import { DeckService } from '../deck.service';
 import { Deck } from '../deck';
+import { Player } from '../player';
+import { PlayerService } from '../player.service';
 
 @Component({
   selector: 'app-play',
@@ -14,11 +16,15 @@ import { Deck } from '../deck';
 })
 export class PlayPage {
   game: Game;
+  player: Player = new Player();
+  dealer: Player = new Player();
+  players: Array<Player> = [];
   deck: Deck = new Deck();
 
   constructor(
     private deckService: DeckService,
     private gameService: GameService,
+    private playerService: PlayerService,
     private router: Router,
     private route: ActivatedRoute,
     private cookieService: CookieService 
@@ -46,6 +52,17 @@ export class PlayPage {
   start(): void {
     this.game.hasStarted = true;
     this.load(this.game.shoes);
+    for (var i = 0; i<this.game.players; i++){
+      this.players.push(new Player());
+    }
+    if (this.game.gameType == "blackjack") {
+      this.deal();
+      this.dealer.isDealer = true;
+    } else {
+      this.deal(5);
+    }
+    this.player.isNext = true;
+    this.setTurn();
   }
 
   load(shoeSize:number): void {
@@ -55,4 +72,118 @@ export class PlayPage {
         this.deck = response;
       });
   }
+
+  deal(number:number = 2): void {
+    this.playerService.deal(this.player, this.deck, number);
+    console.log(this.player);
+    for (let player of this.players) {
+      this.playerService.deal(player, this.deck, number);
+      console.log(player);
+    }
+    if(this.game.gameType == "blackjack") {
+      this.playerService.deal(this.dealer, this.deck, number);
+      console.log(this.dealer);
+    }
+    console.log(this.deck);
+  }
+
+  hit(player:Player): void {
+    this.playerService.deal(player, this.deck, 1);
+    console.log(player);
+    console.log(this.deck);
+  }
+
+  bet(amount:number): void {
+    if(this.player.isTurn == true) {
+      this.playerService.makeBet(this.player, amount);
+    } else {
+      for (let player of this.players) {
+        if (player.isTurn == true){
+          this.playerService.makeBet(player, amount);
+          break;
+        }
+      }
+    }
+  }
+
+  setTurn(): void {
+    if (this.game.gameType == "blackjack") {
+      if(this.player.isNext == true && this.players.length == 0) {
+        this.playerService.setTurn(this.player, this.dealer);
+      } else if (this.player.isNext == true) {
+        this.playerService.setTurn(this.player, this.players[0]);
+      } else if (this.player.isNext == false && this.dealer.isNext == false) {
+        for (let i = 0; i < this.players.length; i++) {
+          let j = i+1;
+          if (this.players[i].isNext == true && j < this.players.length){
+            this.playerService.setTurn(this.players[i], this.players[j]);
+            break;
+          } else if (this.players[i].isNext == true) {
+            this.playerService.setTurn(this.players[i], this.dealer);
+          }
+        }
+      } else {
+        this.playerService.setTurn(this.dealer, this.player);
+      }
+    }
+
+    if (this.game.gameType == "poker") {
+      if (this.player.isNext == true) {
+        this.playerService.setTurn(this.player, this.players[0]);
+      } else {
+        for (let i = 0; i < this.players.length; i++) {
+          let j = i+1;
+          if (this.players[i].isNext == true && j < this.players.length){
+            this.playerService.setTurn(this.players[i], this.players[j]);
+            break;
+          } else {
+            this.playerService.setTurn(this.players[i], this.player);
+          }
+        }
+      }
+    }
+  }
+
+  endTurn(): void {
+    if (this.player.isTurn == true){
+      this.player.isTurn = false;
+    } else if (this.dealer.isTurn == true){
+      this.dealer.isTurn = false;
+    } else {
+      for (let player of this.players) {
+        if (player.isTurn == true){
+          player.isTurn = false;
+          break;
+        }
+      }
+    }
+    this.setTurn();
+    console.log(this.player);
+    console.log(this.players);
+    console.log(this.dealer);
+  }
+
+  reset(): void {
+    this.deck = new Deck();
+    this.load(this.game.shoes);
+    let money = this.player.money;
+    this.player = new Player();
+    this.player.money = money;
+    this.dealer = new Player();
+    for(let player of this.players) {
+      money = player.money;
+      player = new Player();
+      player.money = money;
+    }
+
+    if (this.game.gameType == "blackjack") {
+      this.deal();
+      this.dealer.isDealer = true;
+    } else {
+      this.deal(5);
+    }
+    this.player.isNext = true;
+    this.setTurn();
+  }
+
 }

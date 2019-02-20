@@ -18,7 +18,6 @@ export class HomePage {
   players: Array<Player> = [];
   deck: Deck = new Deck();
   shoes: number;
-  dealNumber: number;
   numPlayers: number;
 
   constructor (
@@ -30,11 +29,11 @@ export class HomePage {
     this.shoes = Math.floor(Math.random()*8) + 1;
     this.load(this.shoes);
     this.dealer.isDealer = true;
-    this.dealNumber = Math.floor(Math.random()*5) + 1;
-    this.numPlayers = Math.floor(Math.random()*3);
+    this.numPlayers = 2; //Math.floor(Math.random()*3);
     for (var i = 0; i<this.numPlayers; i++){
       this.players.push(new Player());
     }
+    this.deal();
     this.player.isNext = true;
     this.setTurn();
     console.log(this.player);
@@ -62,6 +61,12 @@ export class HomePage {
       this.playerService.deal(player, this.deck, number);
     }
     this.playerService.deal(this.dealer, this.deck, number);
+    console.log(this.deck);
+  }
+
+  hit(player:Player): void {
+    this.playerService.deal(player, this.deck, 1);
+    console.log(player);
     console.log(this.deck);
   }
 
