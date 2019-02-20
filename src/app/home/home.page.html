@@ -23,8 +23,9 @@
           <ion-item (click)="flipCard(card)">{{card.name}} of {{card.suit}}</ion-item>
         </ion-list>
         <ion-button expand="full" color="tertiary" (click)="shuffle()">Shuffle</ion-button>
-        <ion-button expand="full" color="tertiary" (click)="deal(dealNumber)">Deal</ion-button>
+        <ion-button expand="full" color="tertiary" (click)="deal()">Deal</ion-button>
         <ion-button expand="full" color="tertiary" (click)="bet(250)">Bet</ion-button>
+        <ion-button expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
       </ion-card-content>
     </ion-card>
 </ion-content>

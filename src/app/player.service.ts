@@ -22,6 +22,9 @@ export class PlayerService {
       player.totalValue += card.value;
       if(card.name == "Ace"){
         player.numAces++;
+        if(player.numAces == 2) {
+          player.totalValue += 10;
+        }
       } else if(card.name == "Two") {
         player.numTwos++;
       } else if(card.name == "Three"){
@@ -66,4 +69,9 @@ export class PlayerService {
     player.money -= amount;
   }
 
+  setTurn(player: Player, next: Player): void {
+    player.isNext = false;
+    player.isTurn = true;
+    next.isNext = true;
+  }
 }

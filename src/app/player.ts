@@ -3,8 +3,9 @@ import { Card } from './card';
 export class Player {
     hand: Array<Card> = [];
     name: string;
-    money: number;
+    money: number = 10000;
     isTurn: boolean = false;
+    isNext: boolean = false;
     isDealer: boolean = false;
     totalValue: number = 0;
     numAces: number = 0;
