@@ -8,6 +8,7 @@ import { DeckService } from '../deck.service';
 import { Deck } from '../deck';
 import { Player } from '../player';
 import { PlayerService } from '../player.service';
+import { Card } from '../card';
 
 @Component({
   selector: 'app-play',
@@ -16,8 +17,8 @@ import { PlayerService } from '../player.service';
 })
 export class PlayPage {
   game: Game;
-  player: Player = new Player();
-  dealer: Player = new Player();
+  player: Player = new Player('Player 1');
+  dealer: Player = new Player('Dealer');
   players: Array<Player> = [];
   deck: Deck = new Deck();
 
@@ -66,23 +67,16 @@ export class PlayPage {
   }
 
   load(shoeSize:number): void {
-    this.deckService.load(shoeSize).subscribe(
-      (response:any) =>{
-        console.log(response);
-        this.deck = response;
-      });
+    this.deckService.load(this.deck, shoeSize);
   }
 
   deal(number:number = 2): void {
     this.playerService.deal(this.player, this.deck, number);
-    console.log(this.player);
     for (let player of this.players) {
       this.playerService.deal(player, this.deck, number);
-      console.log(player);
     }
     if(this.game.gameType == "blackjack") {
       this.playerService.deal(this.dealer, this.deck, number);
-      console.log(this.dealer);
     }
     console.log(this.deck);
   }
@@ -158,9 +152,6 @@ export class PlayPage {
       }
     }
     this.setTurn();
-    console.log(this.player);
-    console.log(this.players);
-    console.log(this.dealer);
   }
 
   reset(): void {
@@ -184,6 +175,14 @@ export class PlayPage {
     }
     this.player.isNext = true;
     this.setTurn();
+  }
+
+  flipCard(card:Card): void {
+    if(card.isFaceUp == false) {
+      card.isFaceUp = true;
+    } else {
+      card.isFaceUp = false;
+    }
   }
 
 }

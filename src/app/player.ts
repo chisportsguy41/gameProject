@@ -25,4 +25,8 @@ export class Player {
     numDiamonds: number = 0;
     numSpades: number = 0;
     numClubs: number = 0;
+
+    constructor(private username: string = '') {
+        this.name = this.username;
+    }
 }

@@ -26,9 +26,10 @@ export class HomePage {
     ) {}
 
   ngOnInit() {
-    this.shoes = Math.floor(Math.random()*8) + 1;
+    this.shoes = 2; //Math.floor(Math.random()*8) + 1;
     this.load(this.shoes);
-    this.dealer.isDealer = true;
+    console.log(this.deck);
+    /*this.dealer.isDealer = true;
     this.numPlayers = 2; //Math.floor(Math.random()*3);
     for (var i = 0; i<this.numPlayers; i++){
       this.players.push(new Player());
@@ -38,15 +39,11 @@ export class HomePage {
     this.setTurn();
     console.log(this.player);
     console.log(this.players);
-    console.log(this.dealer);
+    console.log(this.dealer);*/
   }
 
   load(shoeSize:number): void {
-    this.deckService.load(shoeSize).subscribe(
-      (response:any) =>{
-        console.log(response);
-        this.deck = response;
-      });
+    this.deckService.load(this.deck, shoeSize);
   }
 
   shuffle(): void {
