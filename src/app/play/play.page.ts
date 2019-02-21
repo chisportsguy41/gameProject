@@ -82,9 +82,15 @@ export class PlayPage {
   }
 
   hit(player:Player): void {
-    this.playerService.deal(player, this.deck, 1);
-    console.log(player);
-    console.log(this.deck);
+    if (player.totalValue < 21) {
+      this.playerService.deal(player, this.deck, 1);
+      console.log(player);
+      console.log(this.deck);
+    } else if (player.totalValue == 21){
+      alert("You're an idiot. You won, stop trying to hit.")
+    } else {
+      alert("You've already busted!");
+    }
   }
 
   bet(amount:number): void {
