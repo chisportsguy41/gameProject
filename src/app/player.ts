@@ -25,8 +25,10 @@ export class Player {
     numDiamonds: number = 0;
     numSpades: number = 0;
     numClubs: number = 0;
+    addedAce: boolean = false;
+    subbedAce: boolean = false;
 
-    constructor(private username: string = '') {
-        this.name = this.username;
+    constructor(name: string = '') {
+        this.name = name;
     }
 }

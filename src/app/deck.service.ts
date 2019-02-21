@@ -10,7 +10,7 @@ export class DeckService {
   deck: Deck = new Deck();
   names: Array<string> = ['Ace', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King'];
   suits: Array<string> = ['Hearts','Diamonds','Spades','Clubs'];
-  values: Array<number> = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10];
+  values: Array<number> = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10];
   cards: Array<Card>;
 
   constructor() { 

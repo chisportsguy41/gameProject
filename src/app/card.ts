@@ -5,13 +5,13 @@ export class Card {
     isFaceUp: boolean;
 
     constructor(
-        private newSuit: string, 
-        private newName: string,
-        private newValue: number,
+        suit: string, 
+        name: string,
+        value: number,
         ) {
-            this.suit = this.newSuit;
-            this.name = this.newName;
-            this.value = this.newValue;
-            this.isFaceUp = false;
+            this.suit = suit;
+            this.name = name;
+            this.value = value;
+            this.isFaceUp = true;
         }
 }

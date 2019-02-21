@@ -22,8 +22,9 @@ export class PlayerService {
       player.totalValue += card.value;
       if(card.name == "Ace"){
         player.numAces++;
-        if(player.numAces >= 2) {
-          player.totalValue -= 10;
+        if(player.numAces == 1 && player.totalValue < 12) {
+          player.totalValue += 10;
+          player.addedAce = true;
         }
       } else if(card.name == "Two") {
         player.numTwos++;
@@ -61,6 +62,12 @@ export class PlayerService {
         player.numDiamonds++;
       }
 
+      if (player.addedAce && player.totalValue > 21 && !player.subbedAce) {
+        player.totalValue -= 10;
+        player.subbedAce = true;
+      }
+
+      
       player.hand.push(card);
     }
   }

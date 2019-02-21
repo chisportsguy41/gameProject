@@ -23,7 +23,7 @@
     </ion-card-content>
     <ion-card-content *ngFor="let Player of players">
       <div *ngIf="Player.isTurn == true">
-        <ion-label color="danger" *ngIf="Player.totalValue > 21">You lost!</ion-label>
+        <ion-label color="danger" *ngIf="Player.totalValue > 21">Player busts!</ion-label>
         <ion-item>
           <div *ngFor="let card of Player.hand" (click)="flipCard(card)" class="cardWrapper">
             <img *ngIf="card.isFaceUp==true" class="cardImage"

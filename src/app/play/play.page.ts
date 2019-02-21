@@ -158,12 +158,15 @@ export class PlayPage {
     this.deck = new Deck();
     this.load(this.game.shoes);
     let money = this.player.money;
-    this.player = new Player();
+    let name = this.player.name;
+    this.player = new Player(name);
     this.player.money = money;
-    this.dealer = new Player();
+    name = this.dealer.name;
+    this.dealer = new Player(name);
     for(let player of this.players) {
       money = player.money;
-      player = new Player();
+      name = player.name;
+      player = new Player(name);
       player.money = money;
     }
 
