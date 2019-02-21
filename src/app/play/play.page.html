@@ -4,13 +4,17 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  <ion-card *ngIf="game">
-    <ion-button *ngIf="game.hasStarted==false" expand="full" (click)="start()">Start</ion-button>
-    <ion-card-header *ngIf="game.hasStarted==true">
-      <ion-card-title>{{game.name}}</ion-card-title>
+<ion-content *ngIf="game" padding>
+  <ion-button *ngIf="game.hasStarted==false" expand="full" (click)="start()">Start</ion-button>
+  <ion-button *ngIf="game.hasStarted==true && winnerMessage" expand="full" color="tertiary" (click)="reset()">Reset</ion-button>
+  <ion-card *ngIf="game.hasStarted==true">
+    <ion-card-header>
+      <ion-card-subtitle>{{game.name}}</ion-card-subtitle>
+      <ion-card-title *ngIf="winnerMessage">{{winnerMessage}}</ion-card-title>
     </ion-card-header>
-    <ion-card-content *ngIf="player.isTurn == true">
+    <ion-card-content>
+      <h2>{{player.name}}</h2>
+      <ion-label color="primary" *ngIf="player.isTurn == true">It's {{player.name}}'s turn! </ion-label>
       <ion-label color="danger" *ngIf="player.totalValue > 21">{{player.name}} busts!</ion-label>
       <ion-item>
         <div *ngFor="let card of player.hand" (click)="flipCard(card)" class="cardWrapper">
@@ -19,11 +23,15 @@
           <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
         </div>
       </ion-item>
-      <ion-button expand="full" color="tertiary" (click)="hit(player)">Hit me!</ion-button>
+      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="hit(player)">Hit me!</ion-button>
+      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="bet(250)">Bet</ion-button>
+      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
     </ion-card-content>
     <ion-card-content *ngFor="let Player of players">
-      <div *ngIf="Player.isTurn == true">
-        <ion-label color="danger" *ngIf="Player.totalValue > 21">Player busts!</ion-label>
+      <div>
+        <h2>{{Player.name}}</h2>
+        <ion-label color="primary" *ngIf="Player.isTurn == true">It's {{Player.name}}'s turn! </ion-label>
+        <ion-label color="danger" *ngIf="Player.totalValue > 21">{{Player.name}} busts!</ion-label>
         <ion-item>
           <div *ngFor="let card of Player.hand" (click)="flipCard(card)" class="cardWrapper">
             <img *ngIf="card.isFaceUp==true" class="cardImage"
@@ -31,10 +39,14 @@
             <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
           </div>
         </ion-item>
-        <ion-button expand="full" color="tertiary" (click)="hit(Player)">Hit me!</ion-button>
+        <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="hit(Player)">Hit me!</ion-button>
+        <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="bet(250)">Bet</ion-button>
+        <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
       </div>
     </ion-card-content>
-    <ion-card-content *ngIf="dealer.isTurn == true">
+    <ion-card-content>
+      <h2>{{dealer.name}}</h2>
+      <ion-label color="primary" *ngIf="dealer.isTurn == true">It's {{dealer.name}}'s turn! </ion-label>
       <ion-label color="danger" *ngIf="dealer.totalValue > 21">{{dealer.name}} busts!</ion-label>
       <ion-item>
         <div *ngFor="let card of dealer.hand" (click)="flipCard(card)" class="cardWrapper">
@@ -43,10 +55,9 @@
           <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
         </div>
       </ion-item>
-      <ion-button expand="full" color="tertiary" (click)="hit(dealer)">Hit me!</ion-button>
+      <ion-button *ngIf="dealer.isTurn == true" expand="full" color="tertiary" (click)="hit(dealer)">Hit me!</ion-button>
+      <ion-button *ngIf="dealer.isTurn == true" expand="full" color="tertiary" (click)="bet(250)">Bet</ion-button>
+      <ion-button *ngIf="dealer.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
     </ion-card-content>
-    <ion-button *ngIf="game.hasStarted==true" expand="full" color="tertiary" (click)="bet(250)">Bet</ion-button>
-    <ion-button *ngIf="game.hasStarted==true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
-    <ion-button *ngIf="game.hasStarted==true" expand="full" color="tertiary" (click)="reset()">Reset</ion-button>
   </ion-card>
 </ion-content>

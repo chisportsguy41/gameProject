@@ -21,6 +21,11 @@ export class PlayPage {
   dealer: Player = new Player('Dealer');
   players: Array<Player> = [];
   deck: Deck = new Deck();
+  botNames: Array<string> = ['Trish', 'Kandis', 'Glinda', 'Val', 'Romelia', 'Almeta',
+  'Deloise', 'Joanie', 'Ayana', 'Jerrell', 'Heidi', 'Julian', 'Aisha', 'Curt', 
+  'Merlyn', 'Johnny', 'Lorretta', 'Mirella', 'Ann', 'Wendi'];
+
+  winnerMessage: string;
 
   constructor(
     private deckService: DeckService,
@@ -53,8 +58,9 @@ export class PlayPage {
   start(): void {
     this.game.hasStarted = true;
     this.load(this.game.shoes);
-    for (var i = 0; i<this.game.players; i++){
-      this.players.push(new Player());
+    for (var i = 0; i < 3; i++){
+      let rand = Math.floor(Math.random()*this.botNames.length);
+      this.players.push(new Player(this.botNames[rand]));
     }
     if (this.game.gameType == "blackjack") {
       this.deal();
@@ -78,6 +84,9 @@ export class PlayPage {
     if(this.game.gameType == "blackjack") {
       this.playerService.deal(this.dealer, this.deck, number);
     }
+    console.log(this.player);
+    console.log(this.players);
+    console.log(this.dealer);
     console.log(this.deck);
   }
 
@@ -85,9 +94,8 @@ export class PlayPage {
     if (player.totalValue < 21) {
       this.playerService.deal(player, this.deck, 1);
       console.log(player);
-      console.log(this.deck);
     } else if (player.totalValue == 21){
-      alert("You're an idiot. You won, stop trying to hit.")
+      alert("You're an idiot. You won, stop trying to hit on 21.")
     } else {
       alert("You've already busted!");
     }
@@ -122,8 +130,15 @@ export class PlayPage {
             this.playerService.setTurn(this.players[i], this.dealer);
           }
         }
-      } else {
-        this.playerService.setTurn(this.dealer, this.player);
+      } else if (this.dealer.isNext == true) {
+        this.playerService.setTurn(this.dealer);
+      }
+
+      if (!this.player.isTurn) {
+        var that = this;
+        setTimeout(function() {
+          that.playForCPU();
+        }, 2000);
       }
     }
 
@@ -149,6 +164,8 @@ export class PlayPage {
       this.player.isTurn = false;
     } else if (this.dealer.isTurn == true){
       this.dealer.isTurn = false;
+      this.endGame();
+      return;
     } else {
       for (let player of this.players) {
         if (player.isTurn == true){
@@ -160,7 +177,42 @@ export class PlayPage {
     this.setTurn();
   }
 
+  endGame(): void {
+    if (this.game.gameType == 'blackjack') {
+      let target = this.dealer.totalValue;
+      let winners: Array<string> = [];
+      if (target == 21) {
+        winners.push(this.dealer.name);
+      } else if (target > 21) {
+        if (this.player.totalValue <= 21) {
+          winners.push(this.player.name);
+        }
+        for (let player of this.players) {
+          if (player.totalValue <= 21) {
+            winners.push(player.name);
+          }
+        }
+      } else if (target < 21) {
+        if (this.player.totalValue <= 21 && this.player.totalValue > target) {
+          winners.push(this.player.name);
+        }
+        for (let player of this.players) {
+          if (player.totalValue <= 21 && player.totalValue > target) {
+            winners.push(player.name);
+          }
+        }
+        if (winners.length == 0) {
+          winners.push(this.dealer.name);
+        }
+      }
+      this.winnerMessage = 'Congratulations! ' + winners.join(', ') + ' won!';
+      console.log(this.winnerMessage);
+    }
+    
+  }
+
   reset(): void {
+    this.winnerMessage = null;
     this.deck = new Deck();
     this.load(this.game.shoes);
     let money = this.player.money;
@@ -169,11 +221,10 @@ export class PlayPage {
     this.player.money = money;
     name = this.dealer.name;
     this.dealer = new Player(name);
-    for(let player of this.players) {
-      money = player.money;
-      name = player.name;
-      player = new Player(name);
-      player.money = money;
+    this.players = [];
+    for (var i = 0; i < 3; i++){
+      let rand = Math.floor(Math.random()*this.botNames.length);
+      this.players.push(new Player(this.botNames[rand]));
     }
 
     if (this.game.gameType == "blackjack") {
@@ -191,6 +242,43 @@ export class PlayPage {
       card.isFaceUp = true;
     } else {
       card.isFaceUp = false;
+    }
+  }
+
+  playForCPU(): void {
+    var that = this;
+    if (this.dealer.isTurn){
+      if (this.dealer.totalValue < 16) {
+        this.hit(this.dealer);
+        setTimeout(function() {
+          that.playForCPU();
+        }, 2000);
+      } else {
+        this.endTurn();
+      }
+    } else {
+      for (let player of this.players) {
+        if (player.isTurn) {
+          if (player.totalValue < 16) {
+            this.hit(player);
+            setTimeout(function() {
+              that.playForCPU();
+            }, 2000);
+          } else if (player.totalValue > 16 && player.totalValue < 21) {
+            var r = Math.floor(Math.random()*100);
+            if (r <= 50) {
+              this.hit(player);
+              setTimeout(function() {
+                that.playForCPU();
+              }, 2000);
+            } else {
+              this.endTurn();
+            }
+          } else {
+            this.endTurn();
+          }
+        }
+      }
     }
   }
 

@@ -78,9 +78,11 @@ export class PlayerService {
     player.money -= amount;
   }
 
-  setTurn(player: Player, next: Player): void {
+  setTurn(player: Player, next: Player = null): void {
     player.isNext = false;
     player.isTurn = true;
-    next.isNext = true;
+    if (next != null) {
+      next.isNext = true;
+    }
   }
 }
