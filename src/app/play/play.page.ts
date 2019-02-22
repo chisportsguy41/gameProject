@@ -26,6 +26,7 @@ export class PlayPage {
   'Merlyn', 'Johnny', 'Lorretta', 'Mirella', 'Ann', 'Wendi'];
 
   winnerMessage: string;
+  startingBet: number = 1000;
 
   constructor(
     private deckService: DeckService,
@@ -65,6 +66,10 @@ export class PlayPage {
     if (this.game.gameType == "blackjack") {
       this.deal();
       this.dealer.isDealer = true;
+      this.bet(this.player, this.startingBet);
+      for (let player of this.players) {
+        this.bet(player, this.startingBet);
+      }
     } else {
       this.deal(5);
     }
@@ -74,6 +79,9 @@ export class PlayPage {
 
   load(shoeSize:number): void {
     this.deckService.load(this.deck, shoeSize);
+    if (shoeSize == 1) {
+      this.deckService.flipAll(this.deck);
+    }
   }
 
   deal(number:number = 2): void {
@@ -91,26 +99,36 @@ export class PlayPage {
   }
 
   hit(player:Player): void {
-    if (player.totalValue < 21) {
+    if (player.totalValue < 21 && (player.hand.length == 2 || !player.hasDoubledDown)) {
       this.playerService.deal(player, this.deck, 1);
       console.log(player);
     } else if (player.totalValue == 21){
       alert("You're an idiot. You won, stop trying to hit on 21.")
+    } else if (player.hand.length > 2 && player.hasDoubledDown) {
+      alert("Doubling down means you can only receive one extra card.")
     } else {
       alert("You've already busted!");
     }
   }
 
-  bet(amount:number): void {
-    if(this.player.isTurn == true) {
-      this.playerService.makeBet(this.player, amount);
-    } else {
-      for (let player of this.players) {
-        if (player.isTurn == true){
-          this.playerService.makeBet(player, amount);
-          break;
-        }
+  bet(bettor: Player, amount:number): void {
+    bettor.money -= amount;
+    bettor.totalBet += amount;
+    console.log(bettor.name + ': ' + bettor.money);
+    console.log(bettor.name + ': ' + bettor.totalBet);
+  }
+
+  doubleDown(bettor: Player): void {
+    if (bettor.money > bettor.totalBet){
+      if (bettor.totalValue > 8 && bettor.totalValue < 12 && !bettor.hasDoubledDown && bettor.hand.length == 2){
+        bettor.money -= bettor.totalBet;
+        bettor.totalBet += bettor.totalBet;
+        bettor.hasDoubledDown = true;
+      } else {
+        alert("You cannot double down on that hand.");
       }
+    } else {
+      alert("You do not have enough money to double down.");
     }
   }
 
@@ -181,24 +199,50 @@ export class PlayPage {
     if (this.game.gameType == 'blackjack') {
       let target = this.dealer.totalValue;
       let winners: Array<string> = [];
-      if (target == 21) {
+      if (this.dealer.hasBlackjack) {
         winners.push(this.dealer.name);
+        if (this.player.hasBlackjack) {
+          this.player.money += this.player.totalBet;
+        }
+        for (let player of this.players) {
+          if (player.hasBlackjack) {
+            player.money += player.totalBet;
+          }
+        }
+      } else if (target == 21 && !this.dealer.hasBlackjack) {
+        winners.push(this.dealer.name);
+        if (this.player.hasBlackjack) {
+          this.player.money += (this.player.totalBet * 1.5);
+        }
+        for (let player of this.players) {
+          if (player.hasBlackjack) {
+            player.money += (player.totalBet * 1.5);
+          }
+        }
       } else if (target > 21) {
         if (this.player.totalValue <= 21) {
           winners.push(this.player.name);
+          this.player.money += (this.player.totalBet *2);
         }
         for (let player of this.players) {
           if (player.totalValue <= 21) {
             winners.push(player.name);
+            player.money += (player.totalBet * 2);
           }
         }
       } else if (target < 21) {
         if (this.player.totalValue <= 21 && this.player.totalValue > target) {
           winners.push(this.player.name);
+          this.player.money += (this.player.totalBet *2);
+        } else if (this.player.totalValue == target) {
+          this.player.money += this.player.totalBet;
         }
         for (let player of this.players) {
           if (player.totalValue <= 21 && player.totalValue > target) {
             winners.push(player.name);
+            player.money += (player.totalBet * 2);
+          } else if (player.totalValue == target) {
+            player.money += player.totalBet;
           }
         }
         if (winners.length == 0) {
@@ -206,7 +250,8 @@ export class PlayPage {
         }
       }
       this.winnerMessage = 'Congratulations! ' + winners.join(', ') + ' won!';
-      console.log(this.winnerMessage);
+      console.log(this.player);
+      console.log(this.players);
     }
     
   }
@@ -216,6 +261,10 @@ export class PlayPage {
     this.deck = new Deck();
     this.load(this.game.shoes);
     let money = this.player.money;
+    if (money == 0) {
+      alert("You are out of money. Thanks for playing!");
+      return;
+    }
     let name = this.player.name;
     this.player = new Player(name);
     this.player.money = money;
@@ -230,6 +279,10 @@ export class PlayPage {
     if (this.game.gameType == "blackjack") {
       this.deal();
       this.dealer.isDealer = true;
+      this.bet(this.player, this.startingBet);
+      for (let player of this.players) {
+        this.bet(player, this.startingBet);
+      }
     } else {
       this.deal(5);
     }
@@ -260,11 +313,17 @@ export class PlayPage {
       for (let player of this.players) {
         if (player.isTurn) {
           if (player.totalValue < 16) {
-            this.hit(player);
-            setTimeout(function() {
-              that.playForCPU();
-            }, 2000);
-          } else if (player.totalValue > 16 && player.totalValue < 21) {
+            if(player.totalValue > 8 && player.totalValue < 12 && player.hand.length == 2){
+              this.doubleDown(player);
+              this.hit(player);
+              this.endTurn();
+            } else {
+              this.hit(player);
+              setTimeout(function() {
+                that.playForCPU();
+              }, 2000);
+            }
+          } else if (player.totalValue >= 16 && player.totalValue < 21) {
             var r = Math.floor(Math.random()*100);
             if (r <= 50) {
               this.hit(player);

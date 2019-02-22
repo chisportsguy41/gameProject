@@ -3,6 +3,7 @@ import { Card } from './card';
 export class Player {
     hand: Array<Card> = [];
     name: string;
+    totalBet: number = 0;
     money: number = 10000;
     isTurn: boolean = false;
     isNext: boolean = false;
@@ -27,6 +28,8 @@ export class Player {
     numClubs: number = 0;
     addedAce: boolean = false;
     subbedAce: boolean = false;
+    hasBlackjack: boolean = false;
+    hasDoubledDown: boolean = false;
 
     constructor(name: string = '') {
         this.name = name;

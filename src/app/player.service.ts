@@ -71,11 +71,10 @@ export class PlayerService {
 
       
       player.hand.push(card);
+      if (player.hand.length == 2 && player.totalValue == 21) {
+        player.hasBlackjack = true;
+      }
     }
-  }
-
-  makeBet(player: Player, amount: number): void {
-    player.money -= amount;
   }
 
   setTurn(player: Player, next: Player = null): void {

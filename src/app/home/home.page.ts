@@ -67,17 +67,9 @@ export class HomePage {
     console.log(this.deck);
   }
 
-  bet(amount:number): void {
-    if(this.player.isTurn == true) {
-      this.playerService.makeBet(this.player, amount);
-    } else {
-      for (let player of this.players) {
-        if (player.isTurn == true){
-          this.playerService.makeBet(player, amount);
-          break;
-        }
-      }
-    }
+  bet(bettor: Player, amount:number): void {
+    bettor.money -= amount;
+    bettor.totalBet += amount;
   }
 
   flipCard(card:Card): void {

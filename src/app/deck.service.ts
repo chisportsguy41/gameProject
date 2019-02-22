@@ -39,4 +39,14 @@ export class DeckService {
     }
     deck.isShuffled = true;
   }
+
+  flipAll(deck: Deck) {
+    for (let card of deck.cards) {
+      if (card.isFaceUp == true) {
+        card.isFaceUp = false;
+      } else {
+        card.isFaceUp = true;
+      }
+    }
+  }
 }
