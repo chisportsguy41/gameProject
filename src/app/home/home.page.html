@@ -14,10 +14,16 @@
     <ion-card>
       <ion-card-content>
         <ion-list>
-          <ion-item *ngFor="let card of deck.cards">
-            <div (click)="flipCard(card)">{{card.name}} of {{card.suit}} ({{card.value}}): {{card.isFaceUp}}</div>
+          <ion-item *ngFor="let card of player.hand">
+            <div (click)="flipCard(card)">{{card.name}} of {{card.suit}}</div>
           </ion-item>
         </ion-list>
+        <ion-list *ngIf="player.hasSplit==true">
+          <ion-item *ngFor="let card of player.splitHand">
+            <div (click)="flipCard(card)">{{card.name}} of {{card.suit}}</div>
+          </ion-item>
+        </ion-list>
+      <ion-button expand="full" (click)="split(player)">Split</ion-button>
       </ion-card-content>
     </ion-card>
 </ion-content>

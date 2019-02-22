@@ -13,8 +13,8 @@ import { PlayerService } from '../player.service';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  player: Player = new Player();
-  dealer: Player = new Player();
+  player: Player = new Player('Player 1');
+  dealer: Player = new Player('Dealer');
   players: Array<Player> = [];
   deck: Deck = new Deck();
   shoes: number;
@@ -29,17 +29,11 @@ export class HomePage {
     this.shoes = 2; //Math.floor(Math.random()*8) + 1;
     this.load(this.shoes);
     console.log(this.deck);
-    /*this.dealer.isDealer = true;
-    this.numPlayers = 2; //Math.floor(Math.random()*3);
-    for (var i = 0; i<this.numPlayers; i++){
-      this.players.push(new Player());
-    }
+    this.dealer.isDealer = true;
     this.deal();
     this.player.isNext = true;
     this.setTurn();
-    console.log(this.player);
-    console.log(this.players);
-    console.log(this.dealer);*/
+    this.bet(this.player, 1000);
   }
 
   load(shoeSize:number): void {
@@ -69,7 +63,7 @@ export class HomePage {
 
   bet(bettor: Player, amount:number): void {
     bettor.money -= amount;
-    bettor.totalBet += amount;
+    bettor.bet += amount;
   }
 
   flipCard(card:Card): void {
@@ -117,6 +111,20 @@ export class HomePage {
     console.log(this.player);
     console.log(this.players);
     console.log(this.dealer);
+  }
+
+  split(player: Player): void {
+    if(!player.hasSplit) {
+      player.hasSplit = true;
+      player.splitBet = player.bet;
+      player.money -= player.splitBet;
+      this.playerService.split(player, this.deck);
+    } else {
+      alert("You have already split your cards.");
+    }
+    
+    console.log(player);
+
   }
 
 }

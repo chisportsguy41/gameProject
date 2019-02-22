@@ -24,8 +24,16 @@
           <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
         </div>
       </ion-item>
+      <ion-item *ngIf="player.hasSplit == true">
+        <div *ngFor="let card of player.splitHand" (click)="flipCard(card)" class="cardWrapper">
+          <img *ngIf="card.isFaceUp==true" class="cardImage"
+          src="assets/imgs/{{card.name | lowercase}}-of-{{card.suit | lowercase}}.png">
+          <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
+        </div>
+      </ion-item>
       <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="hit(player)">Hit me!</ion-button>
-      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="doubleDown(player)">DoubleDown</ion-button>
+      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="doubleDown(player)">Double Down</ion-button>
+      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="split(player)">Split</ion-button>
       <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
     </ion-card-content>
     <ion-card-content *ngFor="let Player of players">
@@ -41,8 +49,17 @@
             <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
           </div>
         </ion-item>
+        <ion-label color="danger" *ngIf="Player.splitValue > 21">{{Player.name}}'s second hand busts!</ion-label>
+        <ion-item *ngIf="Player.hasSplit == true">
+          <div *ngFor="let card of Player.splitHand" (click)="flipCard(card)" class="cardWrapper">
+            <img *ngIf="card.isFaceUp==true" class="cardImage"
+            src="assets/imgs/{{card.name | lowercase}}-of-{{card.suit | lowercase}}.png">
+            <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
+          </div>
+        </ion-item>
         <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="hit(Player)">Hit me!</ion-button>
         <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="doubleDown(Player)">Double Down</ion-button>
+        <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="split(Player)">Split</ion-button>
         <ion-button *ngIf="Player.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
       </div>
     </ion-card-content>

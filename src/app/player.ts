@@ -2,14 +2,18 @@ import { Card } from './card';
 
 export class Player {
     hand: Array<Card> = [];
+    splitHand: Array<Card>;
     name: string;
-    totalBet: number = 0;
+    bet: number = 0;
+    splitBet: number = 0;
     money: number = 10000;
     isTurn: boolean = false;
     isNext: boolean = false;
     isDealer: boolean = false;
     totalValue: number = 0;
+    splitValue: number = 0;
     numAces: number = 0;
+    numSplitAces: number = 0;
     numTwos: number = 0;
     numThrees: number = 0;
     numFours: number = 0;
@@ -28,8 +32,12 @@ export class Player {
     numClubs: number = 0;
     addedAce: boolean = false;
     subbedAce: boolean = false;
+    addedSplitAce: boolean = false;
+    subbedSplitAce: boolean = false;
     hasBlackjack: boolean = false;
     hasDoubledDown: boolean = false;
+    hasSplit: boolean = false;
+    splitBlackjack: boolean = false;
 
     constructor(name: string = '') {
         this.name = name;

@@ -113,16 +113,16 @@ export class PlayPage {
 
   bet(bettor: Player, amount:number): void {
     bettor.money -= amount;
-    bettor.totalBet += amount;
+    bettor.bet += amount;
     console.log(bettor.name + ': ' + bettor.money);
-    console.log(bettor.name + ': ' + bettor.totalBet);
+    console.log(bettor.name + ': ' + bettor.bet);
   }
 
   doubleDown(bettor: Player): void {
-    if (bettor.money > bettor.totalBet){
-      if (bettor.totalValue > 8 && bettor.totalValue < 12 && !bettor.hasDoubledDown && bettor.hand.length == 2){
-        bettor.money -= bettor.totalBet;
-        bettor.totalBet += bettor.totalBet;
+    if (bettor.money > bettor.bet){
+      if (bettor.totalValue > 8 && bettor.totalValue < 12 && !bettor.hasSplit && !bettor.hasDoubledDown && bettor.hand.length == 2){
+        bettor.money -= bettor.bet;
+        bettor.bet += bettor.bet;
         bettor.hasDoubledDown = true;
       } else {
         alert("You cannot double down on that hand.");
@@ -130,6 +130,24 @@ export class PlayPage {
     } else {
       alert("You do not have enough money to double down.");
     }
+  }
+
+  split(player: Player): void {
+    if(player.hand.length == 2 && player.hand[0].name === player.hand[1].name) {
+      if(!player.hasSplit) {
+        player.hasSplit = true;
+        player.splitBet = player.bet;
+        player.money -= player.splitBet;
+        this.playerService.split(player, this.deck);
+      } else {
+        alert("You have already split your cards.");
+      }
+    } else {
+      alert("Your cards do not match.");
+    }
+    
+    console.log(player);
+
   }
 
   setTurn(): void {
@@ -152,12 +170,12 @@ export class PlayPage {
         this.playerService.setTurn(this.dealer);
       }
 
-      if (!this.player.isTurn) {
+      /*if (!this.player.isTurn) {
         var that = this;
         setTimeout(function() {
           that.playForCPU();
         }, 2000);
-      }
+      }*/
     }
 
     if (this.game.gameType == "poker") {
@@ -202,47 +220,47 @@ export class PlayPage {
       if (this.dealer.hasBlackjack) {
         winners.push(this.dealer.name);
         if (this.player.hasBlackjack) {
-          this.player.money += this.player.totalBet;
+          this.player.money += this.player.bet;
         }
         for (let player of this.players) {
           if (player.hasBlackjack) {
-            player.money += player.totalBet;
+            player.money += player.bet;
           }
         }
       } else if (target == 21 && !this.dealer.hasBlackjack) {
         winners.push(this.dealer.name);
         if (this.player.hasBlackjack) {
-          this.player.money += (this.player.totalBet * 1.5);
+          this.player.money += (this.player.bet * 1.5);
         }
         for (let player of this.players) {
           if (player.hasBlackjack) {
-            player.money += (player.totalBet * 1.5);
+            player.money += (player.bet * 1.5);
           }
         }
       } else if (target > 21) {
         if (this.player.totalValue <= 21) {
           winners.push(this.player.name);
-          this.player.money += (this.player.totalBet *2);
+          this.player.money += (this.player.bet *2);
         }
         for (let player of this.players) {
           if (player.totalValue <= 21) {
             winners.push(player.name);
-            player.money += (player.totalBet * 2);
+            player.money += (player.bet * 2);
           }
         }
       } else if (target < 21) {
         if (this.player.totalValue <= 21 && this.player.totalValue > target) {
           winners.push(this.player.name);
-          this.player.money += (this.player.totalBet *2);
+          this.player.money += (this.player.bet *2);
         } else if (this.player.totalValue == target) {
-          this.player.money += this.player.totalBet;
+          this.player.money += this.player.bet;
         }
         for (let player of this.players) {
           if (player.totalValue <= 21 && player.totalValue > target) {
             winners.push(player.name);
-            player.money += (player.totalBet * 2);
+            player.money += (player.bet * 2);
           } else if (player.totalValue == target) {
-            player.money += player.totalBet;
+            player.money += player.bet;
           }
         }
         if (winners.length == 0) {

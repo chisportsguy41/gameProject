@@ -14,6 +14,7 @@ export class PlayerService {
 
   deal(player:Player, deck:Deck, num:number = 2): void {
     let cards: Array<Card> = [];
+    
     for (var i = 0; i < num; i++) {
       cards.push(deck.cards.pop());
     }
@@ -69,10 +70,39 @@ export class PlayerService {
         player.subbedAce = true;
       }
 
-      
       player.hand.push(card);
       if (player.hand.length == 2 && player.totalValue == 21) {
         player.hasBlackjack = true;
+      }
+    }
+
+    if (player.hasSplit) {
+      let splitCards: Array<Card> = [];
+      for (var i = 0; i < num; i++) {
+        splitCards.push(deck.cards.pop());
+      }
+  
+      for (let card of splitCards) {
+        player.splitValue += card.value;
+        if(card.name == "Ace"){
+          player.numSplitAces++;
+          if (player.numSplitAces == 1 && player.splitValue < 12) {
+            player.splitValue += 10;
+            player.addedSplitAce = true;
+          } else if (player.numAces >= 2){
+            player.splitValue += 10;
+          }
+        }
+        if (player.addedSplitAce && player.splitValue > 21 && !player.subbedSplitAce) {
+          player.splitValue -= 10;
+          player.subbedSplitAce = true;
+        }
+  
+        player.splitHand.push(card);
+        
+        if (player.splitHand.length == 2 && player.splitValue == 21) {
+          player.splitBlackjack = true;
+        }
       }
     }
   }
@@ -83,5 +113,19 @@ export class PlayerService {
     if (next != null) {
       next.isNext = true;
     }
+  }
+
+  split(player: Player, deck: Deck) {
+    player.splitHand = [];
+    player.splitHand.push(player.hand.pop())
+    player.totalValue -= player.splitHand[0].value;
+    player.splitValue += player.splitHand[0].value;
+    if(player.splitHand[0].name == "Ace") {
+      player.numAces--;
+      player.numSplitAces++;
+      player.splitValue += 10;
+      player.addedSplitAce = true;
+    }
+    this.deal(player, deck, 1);
   }
 }
