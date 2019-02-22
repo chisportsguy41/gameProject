@@ -181,12 +181,12 @@ export class PlayPage {
         this.playerService.setTurn(this.dealer);
       }
 
-      /*if (!this.player.isTurn) {
+      if (!this.player.isTurn) {
         var that = this;
         setTimeout(function() {
           that.playForCPU();
         }, 2000);
-      }*/
+      }
     }
 
     if (this.game.gameType == "poker") {
@@ -382,10 +382,17 @@ export class PlayPage {
     } else {
       for (let player of this.players) {
         if (player.isTurn) {
-          if (player.totalValue < 16) {
-            if(player.totalValue > 8 && player.totalValue < 12 && player.hand.length == 2){
+          if (!player.hasSplit && player.hand.length == 2 && player.hand[0].name === player.hand[1].name) {
+            this.split(player);
+            setTimeout(function() {
+              that.playForCPU();
+            }, 2000);
+          } else if (player.totalValue < 16) {
+            if(player.totalValue > 8 && player.totalValue < 12 && player.hand.length == 2 && !player.hasDoubledDown){
               this.doubleDown(player);
-              this.hit(player);
+              setTimeout(function() {
+                that.hit(player);
+              }, 2000);
               this.endTurn();
             } else {
               this.hit(player);
@@ -401,10 +408,44 @@ export class PlayPage {
                 that.playForCPU();
               }, 2000);
             } else {
+              if (player.hasSplit && player.splitValue < 16) {
+                this.hit(player, true);
+                setTimeout(function() {
+                  that.playForCPU();
+                }, 2000);
+              } else if (player.hasSplit && player.splitValue >= 16 && player.splitValue < 21) {
+                var ra = Math.floor(Math.random()*100);
+                if (ra <= 50) {
+                  this.hit(player, true);
+                  setTimeout(function() {
+                    that.playForCPU();
+                  }, 2000);
+                } else {
+                  this.endTurn();
+                }
+              } else {
               this.endTurn();
+              }
             }
           } else {
+            if (player.hasSplit && player.splitValue < 16) {
+              this.hit(player, true);
+              setTimeout(function() {
+                that.playForCPU();
+              }, 2000);
+            } else if (player.hasSplit && player.splitValue >= 16 && player.splitValue < 21) {
+              var ra = Math.floor(Math.random()*100);
+              if (ra <= 50) {
+                this.hit(player, true);
+                setTimeout(function() {
+                  that.playForCPU();
+                }, 2000);
+              } else {
+                this.endTurn();
+              }
+            } else {
             this.endTurn();
+            }
           }
         }
       }

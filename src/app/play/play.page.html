@@ -12,10 +12,12 @@
       <ion-card-subtitle>{{game.name}}</ion-card-subtitle>
       <ion-card-title *ngIf="winnerMessage">{{winnerMessage}}</ion-card-title>
     </ion-card-header>
+    <hr>
     <ion-card-content>
       <h2>{{player.name}}</h2>
       <h3>{{player.money}}</h3>
       <ion-label color="primary" *ngIf="player.isTurn == true">It's {{player.name}}'s turn! </ion-label>
+      <ion-label color="tertiary" *ngIf="player.hasDoubledDown == true">{{player.name}} has doubled down! </ion-label>
       <ion-label color="danger" *ngIf="player.totalValue > 21">{{player.name}} busts!</ion-label>
       <ion-item>
         <div *ngFor="let card of player.hand" (click)="flipCard(card)" class="cardWrapper">
@@ -24,6 +26,7 @@
           <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
         </div>
       </ion-item>
+      <ion-label color="primary" *ngIf="player.hasSplit==true">{{player.name}} has split! </ion-label>
       <ion-label color="danger" *ngIf="player.splitValue > 21">{{player.name}}'s second hand busts!</ion-label>
       <ion-item *ngIf="player.hasSplit == true">
         <div *ngFor="let card of player.splitHand" (click)="flipCard(card)" class="cardWrapper">
@@ -43,6 +46,7 @@
         <h2>{{Player.name}}</h2>
         <h3>{{Player.money}}</h3>
         <ion-label color="primary" *ngIf="Player.isTurn == true">It's {{Player.name}}'s turn! </ion-label>
+        <ion-label color="tertiary" *ngIf="Player.hasDoubledDown == true">{{Player.name}} has doubled down! </ion-label>
         <ion-label color="danger" *ngIf="Player.totalValue > 21">{{Player.name}} busts!</ion-label>
         <ion-item>
           <div *ngFor="let card of Player.hand" (click)="flipCard(card)" class="cardWrapper">
@@ -51,6 +55,7 @@
             <img *ngIf="card.isFaceUp==false" class="cardImage" src="assets/imgs/card-back.png">
           </div>
         </ion-item>
+        <ion-label color="primary" *ngIf="Player.hasSplit==true">{{Player.name}} has split! </ion-label>
         <ion-label color="danger" *ngIf="Player.splitValue > 21">{{Player.name}}'s second hand busts!</ion-label>
         <ion-item *ngIf="Player.hasSplit == true">
           <div *ngFor="let card of Player.splitHand" (click)="flipCard(card)" class="cardWrapper">
