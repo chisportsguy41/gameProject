@@ -98,16 +98,27 @@ export class PlayPage {
     console.log(this.deck);
   }
 
-  hit(player:Player): void {
-    if (player.totalValue < 21 && (player.hand.length == 2 || !player.hasDoubledDown)) {
-      this.playerService.deal(player, this.deck, 1);
-      console.log(player);
-    } else if (player.totalValue == 21){
-      alert("You're an idiot. You won, stop trying to hit on 21.")
-    } else if (player.hand.length > 2 && player.hasDoubledDown) {
-      alert("Doubling down means you can only receive one extra card.")
+  hit(player:Player, split: boolean = false): void {
+    if (!split){
+      if (player.totalValue < 21 && (player.hand.length == 2 || !player.hasDoubledDown)) {
+        this.playerService.deal(player, this.deck, 1, split);
+        console.log(player);
+      } else if (player.totalValue == 21) {
+        alert("You're an idiot. You won, stop trying to hit on 21.")
+      } else if (player.hand.length > 2 && player.hasDoubledDown) {
+        alert("Doubling down means you can only receive one extra card.")
+      } else {
+        alert("You've already busted!");
+      }
     } else {
-      alert("You've already busted!");
+      if (player.splitValue < 21) {
+        this.playerService.deal(player, this.deck, 1, split);
+        console.log(player);
+      } else if (player.splitValue == 21) {
+        alert("You're an idiot. You won, stop trying to hit on 21.")
+      } else {
+        alert("You've already busted!");
+      }
     }
   }
 
@@ -222,18 +233,38 @@ export class PlayPage {
         if (this.player.hasBlackjack) {
           this.player.money += this.player.bet;
         }
+        if (this.player.splitBlackjack) {
+          this.player.money += this.player.splitBet;
+        }
         for (let player of this.players) {
           if (player.hasBlackjack) {
             player.money += player.bet;
           }
+          if (player.splitBlackjack) {
+            player.money += player.splitBet;
+          }
         }
       } else if (target == 21 && !this.dealer.hasBlackjack) {
         winners.push(this.dealer.name);
-        if (this.player.hasBlackjack) {
+        if (this.player.hasSplit) {
+          if (this.player.hasBlackjack) {
+            this.player.money += this.player.bet;
+          }
+          if (this.player.splitBlackjack) {
+            this.player.money += this.player.splitBet;
+          }
+        } else if (this.player.hasBlackjack) {
           this.player.money += (this.player.bet * 1.5);
         }
         for (let player of this.players) {
-          if (player.hasBlackjack) {
+          if (player.hasSplit) {
+            if (player.hasBlackjack) {
+              player.money += player.bet;
+            }
+            if (player.splitBlackjack) {
+              player.money += player.splitBet;
+            }
+          } else if (player.hasBlackjack) {
             player.money += (player.bet * 1.5);
           }
         }
@@ -242,10 +273,18 @@ export class PlayPage {
           winners.push(this.player.name);
           this.player.money += (this.player.bet *2);
         }
+        if (this.player.splitValue <= 21 && this.player.hasSplit) {
+          winners.push(this.player.name + ' (split)');
+          this.player.money += (this.player.splitBet *2);
+        }
         for (let player of this.players) {
           if (player.totalValue <= 21) {
             winners.push(player.name);
             player.money += (player.bet * 2);
+          }
+          if (player.splitValue <= 21 && player.hasSplit) {
+            winners.push(player.name + ' (split)');
+            player.money += (player.splitBet *2);
           }
         }
       } else if (target < 21) {
@@ -255,6 +294,12 @@ export class PlayPage {
         } else if (this.player.totalValue == target) {
           this.player.money += this.player.bet;
         }
+        if (this.player.splitValue <= 21 && this.player.splitValue > target) {
+          winners.push(this.player.name + ' (split)');
+          this.player.money += (this.player.splitBet *2);
+        } else if (this.player.splitValue == target) {
+          this.player.money += this.player.splitBet;
+        }
         for (let player of this.players) {
           if (player.totalValue <= 21 && player.totalValue > target) {
             winners.push(player.name);
@@ -262,12 +307,19 @@ export class PlayPage {
           } else if (player.totalValue == target) {
             player.money += player.bet;
           }
+          if (player.splitValue <= 21 && player.splitValue > target) {
+            winners.push(player.name + ' (split)');
+            player.money += (player.splitBet *2);
+          } else if (player.splitValue == target) {
+            player.money += player.splitBet;
+          }
         }
         if (winners.length == 0) {
           winners.push(this.dealer.name);
         }
       }
       this.winnerMessage = 'Congratulations! ' + winners.join(', ') + ' won!';
+      console.log(this.winnerMessage);
       console.log(this.player);
       console.log(this.players);
     }
