@@ -35,6 +35,8 @@ export class PlayPage {
   username: string = '';
   isConnected: boolean = false;
   monies: Array<number> = [];
+  hasEmittedEvent: boolean = false;
+  hasEnded: boolean = false;
 
   constructor(
     private deckService: DeckService,
@@ -98,6 +100,10 @@ export class PlayPage {
   hit(player:Player, split: boolean = false): void {
     if (!split){
       if (player.totalValue < 21 && (player.hand.length == 2 || !player.hasDoubledDown)) {
+        if (!this.hasEmittedEvent) {
+          this.socket.emit('add-message', {text: 'hits', name: player.name});
+          this.hasEmittedEvent = true;
+        }
         this.playerService.deal(player, this.deck, 1, split);
         console.log(player);
       } else if (player.totalValue == 21) {
@@ -109,6 +115,10 @@ export class PlayPage {
       }
     } else {
       if (player.splitValue < 21) {
+        if (!this.hasEmittedEvent) {
+          this.socket.emit('add-message', {text: 'hits (split)', name: player.name});
+          this.hasEmittedEvent = true;
+        }
         this.playerService.deal(player, this.deck, 1, split);
         console.log(player);
       } else if (player.splitValue == 21) {
@@ -117,6 +127,8 @@ export class PlayPage {
         alert("You've already busted!");
       }
     }
+
+    this.hasEmittedEvent = false;
   }
 
   bet(bettor: Player, amount:number): void {
@@ -128,6 +140,10 @@ export class PlayPage {
   doubleDown(bettor: Player): void {
     if (bettor.money > bettor.bet){
       if (bettor.totalValue > 8 && bettor.totalValue < 12 && !bettor.hasSplit && !bettor.hasDoubledDown && bettor.hand.length == 2){
+        if (!this.hasEmittedEvent) {
+          this.socket.emit('add-message', {text: 'doubles down', name: bettor.name});
+          this.hasEmittedEvent = true;
+        }
         bettor.money -= bettor.bet;
         bettor.bet += bettor.bet;
         bettor.hasDoubledDown = true;
@@ -137,11 +153,17 @@ export class PlayPage {
     } else {
       alert("You do not have enough money to double down.");
     }
+
+    this.hasEmittedEvent = false;
   }
 
   split(player: Player): void {
     if(player.hand.length == 2 && player.hand[0].name === player.hand[1].name) {
       if(!player.hasSplit) {
+        if (!this.hasEmittedEvent) {
+          this.socket.emit('add-message', {text: 'splits', name: player.name});
+          this.hasEmittedEvent = true;
+        }
         player.hasSplit = true;
         player.splitBet = player.bet;
         player.money -= player.splitBet;
@@ -154,7 +176,7 @@ export class PlayPage {
     }
     
     console.log(player);
-
+    this.hasEmittedEvent = false;
   }
 
   setTurn(): void {
@@ -199,20 +221,29 @@ export class PlayPage {
   }
 
   endTurn(): void {
-    if (this.player.isTurn == true){
-      this.player.isTurn = false;
-    } else if (this.dealer.isTurn == true){
+    if (this.dealer.isTurn == true){
       this.dealer.isTurn = false;
+      if (!this.hasEmittedEvent) {
+        this.socket.emit('add-message', {text: 'has ended the round', name: 'The Dealer'});
+        this.hasEmittedEvent = true;
+      } else {
+        this.hasEnded = true;
+      }
       this.endGame();
       return;
     } else {
       for (let player of this.players) {
         if (player.isTurn == true){
+          if (!this.hasEmittedEvent) {
+            this.socket.emit('add-message', {text: 'ends their turn', name: player.name});
+            this.hasEmittedEvent = true;
+          }
           player.isTurn = false;
           break;
         }
       }
     }
+    this.hasEmittedEvent = false;
     this.setTurn();
   }
 
@@ -275,6 +306,11 @@ export class PlayPage {
         }
       }
       this.winnerMessage = 'Congratulations! ' + winners.join(', ') + ' won!';
+      if (!this.hasEnded) {
+        this.socket.emit('add-message', {text: this.winnerMessage});
+      }
+      
+
       console.log(this.winnerMessage);
       console.log(this.player);
       console.log(this.players);
@@ -427,7 +463,53 @@ export class PlayPage {
       this.isConnected = true;
 
       this.getMessages().subscribe(message => {
-        this.messages.push(message);
+        let name = message['name'];
+        let text = message['text'];
+        if (text == 'hits') {
+          for (let player of this.players) {
+            if (name == player.name) {
+              console.log(name + ' ' + text + '!');
+              this.hasEmittedEvent = true;
+              this.hit(player, false);
+              break;
+            }
+          }
+        } else if (text == 'hits (split)') {
+          for (let player of this.players) {
+            if (name == player.name) {
+              console.log(name + ' ' + text + '!');
+              this.hasEmittedEvent = true;
+              this.hit(player, true);
+              break;
+            }
+          }
+        } else if (text == 'doubles down') {
+          for (let player of this.players) {
+            if (name == player.name) {
+              console.log(name + ' ' + text + '!');
+              this.hasEmittedEvent = true;
+              this.doubleDown(player);
+              break;
+            }
+          }
+        } else if (text == 'splits') {
+          for (let player of this.players) {
+            if (name == player.name) {
+              console.log(name + ' ' + text + '!');
+              this.hasEmittedEvent = true;
+              this.split(player);
+              break;
+            }
+          }
+        } else if (text == 'ends their turn' || text == 'has ended the round') {
+          console.log(name + ' ' + text + '!');
+          this.hasEmittedEvent = true;
+          this.endTurn();
+        } else {
+          this.showToast('The game is over!');
+          this.winnerMessage = text;
+        }
+        
       });
    
       this.getUsers().subscribe(data => {
@@ -488,6 +570,8 @@ export class PlayPage {
             this.dealer = new Player('The House');
           }
 
+          this.hasEmittedEvent = false;
+          this.hasEnded = false;
         }
       });
     } else if (this.username === '') {
