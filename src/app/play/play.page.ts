@@ -24,9 +24,6 @@ export class PlayPage {
   dealer: Player = new Player('Dealer');
   players: Array<Player> = [];
   deck: Deck = new Deck();
-  botNames: Array<string> = ['Trish', 'Kandis', 'Glinda', 'Val', 'Romelia', 'Almeta',
-  'Deloise', 'Joanie', 'Ayana', 'Jerrell', 'Heidi', 'Julian', 'Aisha', 'Curt', 
-  'Merlyn', 'Johnny', 'Lorretta', 'Mirella', 'Ann', 'Wendi'];
 
   winnerMessage: string;
   startingBet: number = 1000;
@@ -71,7 +68,7 @@ export class PlayPage {
   start(): void {
     if (!this.game.hasStarted) {
       this.game.hasStarted = true;
-      this.socket.emit('start-game', { text: 'Please start the game' });
+      this.socket.emit('start-game', { text: 'Please start the game', number: 3 /*this.game.players*/ });
     }
     this.load(this.game.shoes);
     
@@ -339,10 +336,6 @@ export class PlayPage {
     name = this.dealer.name;
     this.dealer = new Player(name);
     this.players = [];
-    for (var i = 0; i < 3; i++){
-      let rand = Math.floor(Math.random()*this.botNames.length);
-      this.players.push(new Player(this.botNames[rand]));
-    }
 
     if (this.game.gameType == "blackjack") {
       this.deal();
@@ -523,10 +516,6 @@ export class PlayPage {
           this.players = [];
           for (var i = 0; i < names.length; i++) {
             this.players.push(new Player(names[i]));
-          }
-          for (var i = this.players.length; i < this.game.players; i++) {
-            let rand = Math.floor(Math.random()*this.botNames.length);
-            this.players.push(new Player(this.botNames[rand]));
           }
           if (this.game.gameType == "blackjack") {
             this.deal();
