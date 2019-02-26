@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
 import { Observable } from 'rxjs';
+import { Router } from '@angular/router';
+import { Socket } from 'ng-socket-io';
 import { DeckService } from '../deck.service';
 import { Card } from '../card';
 import { Deck } from '../deck';
@@ -13,6 +15,7 @@ import { PlayerService } from '../player.service';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+  nickname: string = '';
   player: Player = new Player('Player 1');
   dealer: Player = new Player('Dealer');
   players: Array<Player> = [];
@@ -21,6 +24,8 @@ export class HomePage {
   numPlayers: number;
 
   constructor (
+    public router: Router, 
+    private socket: Socket,
     private deckService: DeckService,
     private playerService: PlayerService
     ) {}
@@ -125,6 +130,12 @@ export class HomePage {
     
     console.log(player);
 
+  }
+
+  joinChat() {
+    this.socket.connect();
+    this.socket.emit('set-nickname', this.nickname);
+    this.router.navigate(['/chat', this.nickname]);
   }
 
 }

@@ -15,7 +15,8 @@ const routes: Routes = [
   { path: 'register', loadChildren: './register/register.module#RegisterPageModule' },
   { path: 'logout', loadChildren: './logout/logout.module#LogoutPageModule' },
   { path: 'setup', loadChildren: './setup/setup.module#SetupPageModule' },
-  { path: 'play/:id', loadChildren: './play/play.module#PlayPageModule' }
+  { path: 'play/:id', loadChildren: './play/play.module#PlayPageModule' },
+  { path: 'chat/:nickname', loadChildren: './chat/chat.module#ChatPageModule' }
 ];
 
 @NgModule({

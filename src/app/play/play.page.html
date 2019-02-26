@@ -4,7 +4,28 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="game" padding>
+<ion-content *ngIf="game && !isConnected">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Please enter a username <span *ngIf="game.protected">and password</span></ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list class="connect">
+        <ion-item>
+          <ion-label position="floating">Username</ion-label>
+          <ion-input type="text" [(ngModel)]="username"></ion-input>
+        </ion-item>
+        <ion-item *ngIf="game.protected">
+          <ion-label position="floating">Password</ion-label>
+          <ion-input type="text" [(ngModel)]="password"></ion-input>
+        </ion-item>
+        <ion-button (click)="onSubmit()" expand="full" color="tertiary" [disabled]="username===''">Connect</ion-button>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
+
+<ion-content *ngIf="game && isConnected" padding>
   <ion-button *ngIf="game.hasStarted==false" expand="full" (click)="start()">Start</ion-button>
   <ion-button *ngIf="game.hasStarted==true && winnerMessage" expand="full" color="tertiary" (click)="reset()">Reset</ion-button>
   <ion-card *ngIf="game.hasStarted==true">
@@ -14,7 +35,7 @@
     </ion-card-header>
     <hr>
     <ion-card-content>
-      <h2>{{player.name}}</h2>
+      <!-- <h2>{{player.name}}</h2>
       <h3>{{player.money}}</h3>
       <ion-label color="primary" *ngIf="player.isTurn == true">It's {{player.name}}'s turn! </ion-label>
       <ion-label color="tertiary" *ngIf="player.hasDoubledDown == true">{{player.name}} has doubled down! </ion-label>
@@ -39,7 +60,7 @@
       <ion-button *ngIf="player.isTurn == true && player.hasSplit==true" expand="full" color="tertiary" (click)="hit(player, true)">Hit on split!</ion-button>
       <ion-button *ngIf="player.isTurn == true && player.hasDoubledDown==false && player.hasSplit==false" expand="full" color="tertiary" (click)="doubleDown(player)">Double Down</ion-button>
       <ion-button *ngIf="player.isTurn == true && player.hasDoubledDown==false && player.hasSplit==false" expand="full" color="tertiary" (click)="split(player)">Split</ion-button>
-      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button>
+      <ion-button *ngIf="player.isTurn == true" expand="full" color="tertiary" (click)="endTurn()">End Turn</ion-button> -->
     </ion-card-content>
     <ion-card-content *ngFor="let Player of players">
       <div>

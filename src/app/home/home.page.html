@@ -13,17 +13,11 @@
   <ion-button expand="full" color="tertiary" [routerLink]="['/setup']">Play!</ion-button>
     <ion-card>
       <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let card of player.hand">
-            <div (click)="flipCard(card)">{{card.name}} of {{card.suit}}</div>
-          </ion-item>
-        </ion-list>
-        <ion-list *ngIf="player.hasSplit==true">
-          <ion-item *ngFor="let card of player.splitHand">
-            <div (click)="flipCard(card)">{{card.name}} of {{card.suit}}</div>
-          </ion-item>
-        </ion-list>
-      <ion-button expand="full" (click)="split(player)">Split</ion-button>
+        <ion-item>
+          <ion-label position="floating">Set Nickname</ion-label>
+          <ion-input type="text" [(ngModel)]="nickname"></ion-input>
+        </ion-item>
+        <ion-button expand="full" (click)="joinChat()" [disabled]="nickname === ''">Join Chat as {{ nickname }}</ion-button>
       </ion-card-content>
     </ion-card>
 </ion-content>

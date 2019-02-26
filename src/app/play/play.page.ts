@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from "@angular/router";
 import { CookieService } from 'ngx-cookie-service';
+import { ToastController } from '@ionic/angular';
+import { Socket } from 'ng-socket-io';
+import { Observable } from 'rxjs';
 
 import { GameService } from '../game.service';
 import { Game } from '../game';
@@ -17,7 +20,7 @@ import { Card } from '../card';
 })
 export class PlayPage {
   game: Game;
-  player: Player = new Player('Player 1');
+  player: Player;
   dealer: Player = new Player('Dealer');
   players: Array<Player> = [];
   deck: Deck = new Deck();
@@ -28,13 +31,22 @@ export class PlayPage {
   winnerMessage: string;
   startingBet: number = 1000;
 
+  message: string = '';
+  messages = [];
+
+  password: string;
+  username: string = '';
+  isConnected: boolean = false;
+
   constructor(
     private deckService: DeckService,
     private gameService: GameService,
     private playerService: PlayerService,
     private router: Router,
     private route: ActivatedRoute,
-    private cookieService: CookieService 
+    private cookieService: CookieService,
+    private socket: Socket, 
+    private toastCtrl: ToastController 
   ) { }
 
   ionViewWillEnter(): void {
@@ -57,24 +69,12 @@ export class PlayPage {
   }
 
   start(): void {
-    this.game.hasStarted = true;
+    if (!this.game.hasStarted) {
+      this.game.hasStarted = true;
+      this.socket.emit('start-game', { text: 'Please start the game' });
+    }
     this.load(this.game.shoes);
-    for (var i = 0; i < 3; i++){
-      let rand = Math.floor(Math.random()*this.botNames.length);
-      this.players.push(new Player(this.botNames[rand]));
-    }
-    if (this.game.gameType == "blackjack") {
-      this.deal();
-      this.dealer.isDealer = true;
-      this.bet(this.player, this.startingBet);
-      for (let player of this.players) {
-        this.bet(player, this.startingBet);
-      }
-    } else {
-      this.deal(5);
-    }
-    this.player.isNext = true;
-    this.setTurn();
+    
   }
 
   load(shoeSize:number): void {
@@ -85,14 +85,13 @@ export class PlayPage {
   }
 
   deal(number:number = 2): void {
-    this.playerService.deal(this.player, this.deck, number);
+    //this.playerService.deal(this.player, this.deck, number);
     for (let player of this.players) {
       this.playerService.deal(player, this.deck, number);
     }
     if(this.game.gameType == "blackjack") {
       this.playerService.deal(this.dealer, this.deck, number);
     }
-    console.log(this.player);
     console.log(this.players);
     console.log(this.dealer);
     console.log(this.deck);
@@ -126,7 +125,6 @@ export class PlayPage {
     bettor.money -= amount;
     bettor.bet += amount;
     console.log(bettor.name + ': ' + bettor.money);
-    console.log(bettor.name + ': ' + bettor.bet);
   }
 
   doubleDown(bettor: Player): void {
@@ -180,13 +178,13 @@ export class PlayPage {
       } else if (this.dealer.isNext == true) {
         this.playerService.setTurn(this.dealer);
       }
-
+      /*
       if (!this.player.isTurn) {
         var that = this;
         setTimeout(function() {
           that.playForCPU();
         }, 2000);
-      }
+      }*/
     }
 
     if (this.game.gameType == "poker") {
@@ -449,6 +447,105 @@ export class PlayPage {
           }
         }
       }
+    }
+  }
+
+  getMessages() {
+    let observable = new Observable(observer => {
+      this.socket.on('message', (data) => {
+        observer.next(data);
+      });
+    })
+    return observable;
+  }
+ 
+  getUsers() {
+    let observable = new Observable(observer => {
+      this.socket.on('users-changed', (data) => {
+        observer.next(data);
+      });
+    });
+    return observable;
+  }
+
+  getStatuses() {
+    let observable = new Observable(observer => {
+      this.socket.on('status-changed', (data) => {
+        observer.next(data);
+      });
+    });
+    return observable;
+  }
+ 
+  ionViewWillLeave() {
+    this.socket.disconnect();
+  }
+ 
+  async showToast(msg) {
+    let toast =  await this.toastCtrl.create({
+      message: msg,
+      position: 'top',
+      duration: 2000
+    });
+    toast.present();
+  }
+
+  onSubmit(): void {
+    if (this.username !== '' && (!this.game.protected || 
+      (this.game.protected && this.game.password === this.password))) {
+      this.socket.connect();
+      this.player = new Player(this.username);
+      this.socket.emit('set-nickname', this.username);
+      this.isConnected = true;
+
+      this.getMessages().subscribe(message => {
+        this.messages.push(message);
+      });
+   
+      this.getUsers().subscribe(data => {
+        let user = data['user'];
+        if (data['event'] === 'left') {
+          this.showToast('User left: ' + user);
+        } else {
+          this.showToast('User joined: ' + user);
+        }
+      });
+
+      this.getStatuses().subscribe(data => {
+        let user = data['user'];
+        let text = data['text'];
+        let names = data['list'];
+        if (data['event'] === 'started') {
+          this.showToast(user + ' ' + text);
+          this.game.hasStarted = true;
+          this.start();
+        } else if (data['event'] === 'set-players') {
+          this.players = [];
+          for (var i = 0; i < names.length; i++) {
+            this.players.push(new Player(names[i]));
+          }
+          for (var i = this.players.length; i < this.game.players; i++) {
+            let rand = Math.floor(Math.random()*this.botNames.length);
+            this.players.push(new Player(this.botNames[rand]));
+          }
+          if (this.game.gameType == "blackjack") {
+            this.deal();
+            this.dealer.isDealer = true;
+            //this.bet(this.player, this.startingBet);
+            for (let player of this.players) {
+              this.bet(player, this.startingBet);
+            }
+          } else {
+            this.deal(5);
+          }
+          this.players[0].isNext = true;
+          this.setTurn();
+        }
+      });
+    } else if (this.username === '') {
+      alert('Please enter a username.');
+    } else if (this.game.protected && this.game.password !== this.password) {
+      alert('Your password is incorrect.');
     }
   }
 

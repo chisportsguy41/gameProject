@@ -14,6 +14,8 @@ import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from './auth.service';
 import { DeckService } from './deck.service';
 import { GameService } from './game.service';
+import { SocketIoModule, SocketIoConfig } from 'ng-socket-io';
+const config: SocketIoConfig = { url: 'http://localhost:3001', options: {} };
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,7 +24,8 @@ import { GameService } from './game.service';
     BrowserModule,
     HttpClientModule,
     IonicModule.forRoot(),
-    AppRoutingModule
+    AppRoutingModule,
+    SocketIoModule.forRoot(config)
   ],
   providers: [
     StatusBar,
