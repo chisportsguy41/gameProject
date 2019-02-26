@@ -24,6 +24,7 @@ export class PlayPage {
   dealer: Player = new Player('The House');
   players: Array<Player> = [];
   deck: Deck = new Deck();
+  discard: Array<Card> = [];
 
   winnerMessage: string;
   startingBet: number = 1000;
@@ -50,13 +51,16 @@ export class PlayPage {
   ) { }
 
   ionViewWillEnter(): void {
-    if(this.cookieService.check('sugar') == true) {
+    /* if(this.cookieService.check('sugar') == true) {
       this.route.params.subscribe(
         (params)=> {this.getGame(params['id']);
       });
     } else {
       this.router.navigate(['/login']);
-    }
+    }*/
+    this.route.params.subscribe(
+      (params)=> {this.getGame(params['id']);
+    });
   }
 
   getGame(id:string): void {
@@ -71,9 +75,10 @@ export class PlayPage {
   start(): void {
     if (!this.game.hasStarted) {
       this.game.hasStarted = true;
-      this.socket.emit('start-game', { text: 'Please start the game', number: this.game.players });
+      this.load(this.game.shoes);
+      this.socket.emit('start-game', 
+        { text: 'Please start the game', number: this.game.players, deck: this.deck });
     }
-    this.load(this.game.shoes);
     
   }
 
@@ -319,7 +324,8 @@ export class PlayPage {
   }
 
   reset(): void {
-    this.socket.emit('reset', {text: 'Please reset the game', number: this.game.players});
+    this.deckService.shuffle(this.deck);
+    this.socket.emit('reset', {text: 'Please reset the game', number: this.game.players, deck: this.deck});
   }
 
   flipCard(card:Card): void {
@@ -474,6 +480,11 @@ export class PlayPage {
               break;
             }
           }
+          if (name == 'The House') {
+            console.log('Dealer ' + text + '!');
+            this.hasEmittedEvent = true;
+            this.hit(this.dealer, false);
+          }
         } else if (text == 'hits (split)') {
           for (let player of this.players) {
             if (name == player.name) {
@@ -525,12 +536,14 @@ export class PlayPage {
         let user = data['user'];
         let text = data['text'];
         let names = data['list'];
+        let deck = data['deck'];
         if (data['event'] === 'started') {
           this.showToast(user + ' ' + text);
           this.game.hasStarted = true;
           this.start();
         } 
         if (data['event'] === 'set-players') {
+          this.deck = deck;
           this.players = [];
           for (var i = 0; i < names.length; i++) {
             this.players.push(new Player(names[i]));
@@ -554,9 +567,8 @@ export class PlayPage {
         if (data['event'] === 'reset') {
           this.showToast(user + ' ' + text);
           this.winnerMessage = null;
-          this.deck = new Deck();
-          this.load(this.game.shoes);
-          /*let money = this.player.money;
+          /* this.load(this.game.shoes);
+          let money = this.player.money;
           if (money == 0) {
             alert("You are out of money. Thanks for playing!");
             return;
@@ -564,12 +576,20 @@ export class PlayPage {
           this.monies = [];
           for (let player of this.players) {
             this.monies.push(player.money);
+            let num = player.hand.length;
+            for (var i = 0; i < num; i++) {
+              this.discard.push(player.hand.pop());
+            }
           }
 
           if (this.game.gameType == "blackjack") {
+            let numb = this.dealer.hand.length;
+            for (var i = 0; i < numb; i++) {
+              this.discard.push(this.dealer.hand.pop());
+            }
             this.dealer = new Player('The House');
           }
-
+          console.log(this.discard);
           this.hasEmittedEvent = false;
           this.hasEnded = false;
         }
