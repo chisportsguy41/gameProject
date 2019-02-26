@@ -21,7 +21,7 @@ import { Card } from '../card';
 export class PlayPage {
   game: Game;
   player: Player;
-  dealer: Player = new Player('Dealer');
+  dealer: Player = new Player('The House');
   players: Array<Player> = [];
   deck: Deck = new Deck();
 
@@ -34,6 +34,7 @@ export class PlayPage {
   password: string;
   username: string = '';
   isConnected: boolean = false;
+  monies: Array<number> = [];
 
   constructor(
     private deckService: DeckService,
@@ -68,7 +69,7 @@ export class PlayPage {
   start(): void {
     if (!this.game.hasStarted) {
       this.game.hasStarted = true;
-      this.socket.emit('start-game', { text: 'Please start the game', number: 3 /*this.game.players*/ });
+      this.socket.emit('start-game', { text: 'Please start the game', number: this.game.players });
     }
     this.load(this.game.shoes);
     
@@ -185,17 +186,13 @@ export class PlayPage {
     }
 
     if (this.game.gameType == "poker") {
-      if (this.player.isNext == true) {
-        this.playerService.setTurn(this.player, this.players[0]);
-      } else {
-        for (let i = 0; i < this.players.length; i++) {
-          let j = i+1;
-          if (this.players[i].isNext == true && j < this.players.length){
-            this.playerService.setTurn(this.players[i], this.players[j]);
-            break;
-          } else {
-            this.playerService.setTurn(this.players[i], this.player);
-          }
+      for (let i = 0; i < this.players.length; i++) {
+        let j = i+1;
+        if (this.players[i].isNext == true && j < this.players.length){
+          this.playerService.setTurn(this.players[i], this.players[j]);
+          break;
+        } else {
+          this.playerService.setTurn(this.players[i], this.players[0]);
         }
       }
     }
@@ -225,12 +222,6 @@ export class PlayPage {
       let winners: Array<string> = [];
       if (this.dealer.hasBlackjack) {
         winners.push(this.dealer.name);
-        if (this.player.hasBlackjack) {
-          this.player.money += this.player.bet;
-        }
-        if (this.player.splitBlackjack) {
-          this.player.money += this.player.splitBet;
-        }
         for (let player of this.players) {
           if (player.hasBlackjack) {
             player.money += player.bet;
@@ -241,16 +232,6 @@ export class PlayPage {
         }
       } else if (target == 21 && !this.dealer.hasBlackjack) {
         winners.push(this.dealer.name);
-        if (this.player.hasSplit) {
-          if (this.player.hasBlackjack) {
-            this.player.money += this.player.bet;
-          }
-          if (this.player.splitBlackjack) {
-            this.player.money += this.player.splitBet;
-          }
-        } else if (this.player.hasBlackjack) {
-          this.player.money += (this.player.bet * 1.5);
-        }
         for (let player of this.players) {
           if (player.hasSplit) {
             if (player.hasBlackjack) {
@@ -264,14 +245,6 @@ export class PlayPage {
           }
         }
       } else if (target > 21) {
-        if (this.player.totalValue <= 21) {
-          winners.push(this.player.name);
-          this.player.money += (this.player.bet *2);
-        }
-        if (this.player.splitValue <= 21 && this.player.hasSplit) {
-          winners.push(this.player.name + ' (split)');
-          this.player.money += (this.player.splitBet *2);
-        }
         for (let player of this.players) {
           if (player.totalValue <= 21) {
             winners.push(player.name);
@@ -283,18 +256,6 @@ export class PlayPage {
           }
         }
       } else if (target < 21) {
-        if (this.player.totalValue <= 21 && this.player.totalValue > target) {
-          winners.push(this.player.name);
-          this.player.money += (this.player.bet *2);
-        } else if (this.player.totalValue == target) {
-          this.player.money += this.player.bet;
-        }
-        if (this.player.splitValue <= 21 && this.player.splitValue > target) {
-          winners.push(this.player.name + ' (split)');
-          this.player.money += (this.player.splitBet *2);
-        } else if (this.player.splitValue == target) {
-          this.player.money += this.player.splitBet;
-        }
         for (let player of this.players) {
           if (player.totalValue <= 21 && player.totalValue > target) {
             winners.push(player.name);
@@ -322,33 +283,7 @@ export class PlayPage {
   }
 
   reset(): void {
-    this.winnerMessage = null;
-    this.deck = new Deck();
-    this.load(this.game.shoes);
-    let money = this.player.money;
-    if (money == 0) {
-      alert("You are out of money. Thanks for playing!");
-      return;
-    }
-    let name = this.player.name;
-    this.player = new Player(name);
-    this.player.money = money;
-    name = this.dealer.name;
-    this.dealer = new Player(name);
-    this.players = [];
-
-    if (this.game.gameType == "blackjack") {
-      this.deal();
-      this.dealer.isDealer = true;
-      this.bet(this.player, this.startingBet);
-      for (let player of this.players) {
-        this.bet(player, this.startingBet);
-      }
-    } else {
-      this.deal(5);
-    }
-    this.player.isNext = true;
-    this.setTurn();
+    this.socket.emit('reset', {text: 'Please reset the game', number: this.game.players});
   }
 
   flipCard(card:Card): void {
@@ -512,10 +447,14 @@ export class PlayPage {
           this.showToast(user + ' ' + text);
           this.game.hasStarted = true;
           this.start();
-        } else if (data['event'] === 'set-players') {
+        } 
+        if (data['event'] === 'set-players') {
           this.players = [];
           for (var i = 0; i < names.length; i++) {
             this.players.push(new Player(names[i]));
+            if (this.monies[i]) {
+              this.players[i].money = this.monies[i];
+            }
           }
           if (this.game.gameType == "blackjack") {
             this.deal();
@@ -529,6 +468,26 @@ export class PlayPage {
           }
           this.players[0].isNext = true;
           this.setTurn();
+        }
+        if (data['event'] === 'reset') {
+          this.showToast(user + ' ' + text);
+          this.winnerMessage = null;
+          this.deck = new Deck();
+          this.load(this.game.shoes);
+          /*let money = this.player.money;
+          if (money == 0) {
+            alert("You are out of money. Thanks for playing!");
+            return;
+          } */
+          this.monies = [];
+          for (let player of this.players) {
+            this.monies.push(player.money);
+          }
+
+          if (this.game.gameType == "blackjack") {
+            this.dealer = new Player('The House');
+          }
+
         }
       });
     } else if (this.username === '') {
