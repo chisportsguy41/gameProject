@@ -77,7 +77,7 @@ export class PlayPage {
       this.game.hasStarted = true;
       this.load(this.game.shoes);
       this.socket.emit('start-game', 
-        { text: 'Please start the game', number: this.game.players, deck: this.deck });
+        { text: 'Please start the game', number: 4, deck: this.deck, id: this.game._id });
     }
     
   }
@@ -106,7 +106,7 @@ export class PlayPage {
     if (!split){
       if (player.totalValue < 21 && (player.hand.length == 2 || !player.hasDoubledDown)) {
         if (!this.hasEmittedEvent) {
-          this.socket.emit('add-message', {text: 'hits', name: player.name});
+          this.socket.emit('add-message', {text: 'hits', name: player.name, id: this.game._id});
           this.hasEmittedEvent = true;
         }
         this.playerService.deal(player, this.deck, 1, split);
@@ -121,7 +121,7 @@ export class PlayPage {
     } else {
       if (player.splitValue < 21) {
         if (!this.hasEmittedEvent) {
-          this.socket.emit('add-message', {text: 'hits (split)', name: player.name});
+          this.socket.emit('add-message', {text: 'hits (split)', name: player.name, id: this.game._id});
           this.hasEmittedEvent = true;
         }
         this.playerService.deal(player, this.deck, 1, split);
@@ -144,9 +144,10 @@ export class PlayPage {
 
   doubleDown(bettor: Player): void {
     if (bettor.money > bettor.bet){
-      if (bettor.totalValue > 8 && bettor.totalValue < 12 && !bettor.hasSplit && !bettor.hasDoubledDown && bettor.hand.length == 2){
+      if (bettor.totalValue > 8 && bettor.totalValue < 12 && !bettor.hasSplit 
+          && !bettor.hasDoubledDown && bettor.hand.length == 2) {
         if (!this.hasEmittedEvent) {
-          this.socket.emit('add-message', {text: 'doubles down', name: bettor.name});
+          this.socket.emit('add-message', {text: 'doubles down', name: bettor.name, id: this.game._id});
           this.hasEmittedEvent = true;
         }
         bettor.money -= bettor.bet;
@@ -166,7 +167,7 @@ export class PlayPage {
     if(player.hand.length == 2 && player.hand[0].name === player.hand[1].name) {
       if(!player.hasSplit) {
         if (!this.hasEmittedEvent) {
-          this.socket.emit('add-message', {text: 'splits', name: player.name});
+          this.socket.emit('add-message', {text: 'splits', name: player.name, id: this.game._id});
           this.hasEmittedEvent = true;
         }
         player.hasSplit = true;
@@ -186,11 +187,7 @@ export class PlayPage {
 
   setTurn(): void {
     if (this.game.gameType == "blackjack") {
-      if(this.player.isNext == true && this.players.length == 0) {
-        this.playerService.setTurn(this.player, this.dealer);
-      } else if (this.player.isNext == true) {
-        this.playerService.setTurn(this.player, this.players[0]);
-      } else if (this.player.isNext == false && this.dealer.isNext == false) {
+      if (this.dealer.isNext == false) {
         for (let i = 0; i < this.players.length; i++) {
           let j = i+1;
           if (this.players[i].isNext == true && j < this.players.length){
@@ -200,7 +197,7 @@ export class PlayPage {
             this.playerService.setTurn(this.players[i], this.dealer);
           }
         }
-      } else if (this.dealer.isNext == true) {
+      } else {
         this.playerService.setTurn(this.dealer);
       }
       /*
@@ -229,8 +226,7 @@ export class PlayPage {
     if (this.dealer.isTurn == true){
       this.dealer.isTurn = false;
       if (!this.hasEmittedEvent) {
-        this.socket.emit('add-message', {text: 'has ended the round', name: 'The Dealer'});
-        this.hasEmittedEvent = true;
+        this.socket.emit('add-message', {text: 'has ended the round', name: 'The Dealer', id: this.game._id});
       } else {
         this.hasEnded = true;
       }
@@ -240,16 +236,33 @@ export class PlayPage {
       for (let player of this.players) {
         if (player.isTurn == true){
           if (!this.hasEmittedEvent) {
-            this.socket.emit('add-message', {text: 'ends their turn', name: player.name});
-            this.hasEmittedEvent = true;
+            this.socket.emit('add-message', {text: 'ends their turn', name: player.name, id: this.game._id});
           }
           player.isTurn = false;
           break;
         }
       }
     }
-    this.hasEmittedEvent = false;
+    
     this.setTurn();
+    var that = this;
+
+    if (!this.hasEmittedEvent) {
+      if (this.dealer.isTurn) {
+        setTimeout(function() {
+          that.playForCPU();
+        }, 2000);
+      } else {
+        for (let player of this.players) {
+          if (player.isTurn && !player.isHuman) {
+            setTimeout(function() {
+              that.playForCPU();
+            }, 2000);
+          }
+        }
+      }
+    }
+    this.hasEmittedEvent = false;
   }
 
   endGame(): void {
@@ -312,12 +325,11 @@ export class PlayPage {
       }
       this.winnerMessage = 'Congratulations! ' + winners.join(', ') + ' won!';
       if (!this.hasEnded) {
-        this.socket.emit('add-message', {text: this.winnerMessage});
+        this.socket.emit('add-message', {text: this.winnerMessage, id: this.game._id});
       }
       
 
       console.log(this.winnerMessage);
-      console.log(this.player);
       console.log(this.players);
     }
     
@@ -325,7 +337,7 @@ export class PlayPage {
 
   reset(): void {
     this.deckService.shuffle(this.deck);
-    this.socket.emit('reset', {text: 'Please reset the game', number: this.game.players, deck: this.deck});
+    this.socket.emit('reset', {text: 'Please reset the game', number: 4, deck: this.deck, id: this.game._id});
   }
 
   flipCard(card:Card): void {
@@ -356,7 +368,8 @@ export class PlayPage {
               that.playForCPU();
             }, 2000);
           } else if (player.totalValue < 16) {
-            if(player.totalValue > 8 && player.totalValue < 12 && player.hand.length == 2 && !player.hasDoubledDown){
+            if(player.totalValue > 8 && player.totalValue < 12 
+                && player.hand.length == 2 && !player.hasDoubledDown){
               this.doubleDown(player);
               setTimeout(function() {
                 that.hit(player);
@@ -465,7 +478,7 @@ export class PlayPage {
       (this.game.protected && this.game.password === this.password))) {
       this.socket.connect();
       this.player = new Player(this.username);
-      this.socket.emit('set-nickname', this.username);
+      this.socket.emit('set-nickname', {name: this.username, id: this.game._id});
       this.isConnected = true;
 
       this.getMessages().subscribe(message => {
@@ -532,21 +545,38 @@ export class PlayPage {
         }
       });
 
+      var humans = 0;
       this.getStatuses().subscribe(data => {
         let user = data['user'];
         let text = data['text'];
         let names = data['list'];
         let deck = data['deck'];
+        let num = data['num'];
+        
         if (data['event'] === 'started') {
           this.showToast(user + ' ' + text);
           this.game.hasStarted = true;
           this.start();
         } 
         if (data['event'] === 'set-players') {
+          if (humans == 0) {
+            humans = num;
+          } else if (humans > num) {
+            humans = num;
+            for (var j = 0; j < this.players.length; j++) {
+              if (names[j] !== this.players[j].name) {
+                this.monies.splice(j, 1);
+                break;
+              }
+            }
+          }
           this.deck = deck;
           this.players = [];
           for (var i = 0; i < names.length; i++) {
             this.players.push(new Player(names[i]));
+            if (i >= num) {
+              this.players[i].isHuman = false;
+            }
             if (this.monies[i]) {
               this.players[i].money = this.monies[i];
             }
@@ -554,6 +584,7 @@ export class PlayPage {
           if (this.game.gameType == "blackjack") {
             this.deal();
             this.dealer.isDealer = true;
+            this.dealer.isHuman = false;
             //this.bet(this.player, this.startingBet);
             for (let player of this.players) {
               this.bet(player, this.startingBet);

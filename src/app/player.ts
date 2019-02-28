@@ -38,6 +38,7 @@ export class Player {
     hasDoubledDown: boolean = false;
     hasSplit: boolean = false;
     splitBlackjack: boolean = false;
+    isHuman = true;
 
     constructor(name: string = '') {
         this.name = name;

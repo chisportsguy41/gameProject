@@ -1,5 +1,5 @@
 export class Game {
-    id: string;
+    _id: string;
     gameType: string;
     pot: number = 0;
     shoes: number;
